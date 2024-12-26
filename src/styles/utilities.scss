@@ -86,44 +86,55 @@ $borderWidths: (
 @each $name, $value in $borderWidths {
   .border-#{$name} {
     border-width: $value !important;
+    border-style: solid !important;
   }
 
   .border-t-#{$name} {
     border-top-width: $value !important;
+    border-top-style: solid !important;
   }
 
   .border-r-#{$name} {
     border-right-width: $value !important;
+    border-right-style: solid !important;
   }
 
   .border-b-#{$name} {
     border-bottom-width: $value !important;
+    border-bottom-style: solid !important;
   }
 
   .border-l-#{$name} {
     border-left-width: $value !important;
+    border-left-style: solid !important;
   }
 
   .border-x-#{$name} {
     border-left-width: $value !important;
     border-right-width: $value !important;
+    border-left-style: solid !important;
+    border-right-style: solid !important;
   }
 
   .border-y-#{$name} {
     border-top-width: $value !important;
     border-bottom-width: $value !important;
+    border-style: solid !important;
   }
 
   .hover\:border-#{$name}:hover {
     border-width: $value !important;
+    border-style: solid !important;
   }
 
   .focus\:border-#{$name}:focus {
     border-width: $value !important;
+    border-style: solid !important;
   }
 
   .active\:border-#{$name}:active {
     border-width: $value !important;
+    border-style: solid !important;
   }
 }
 

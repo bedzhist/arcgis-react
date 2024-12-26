@@ -1,0 +1,71 @@
+# Ignore all files in the node_modules directory
+node_modules/**
+
+# Ignore all files in the build directory
+build/**
+
+# Ignore all files in the dist directory
+dist/**
+
+# Ignore all files in the coverage directory
+coverage/**
+
+# Ignore all files in the .vscode directory
+.vscode/**
+
+# Ignore all files in the .idea directory
+.idea/**
+
+# Ignore all files in the .git directory
+.git/**
+
+# Ignore all files in the .hg directory
+.hg/**
+
+# Ignore all files in the .svn directory
+.svn/**
+
+# Ignore all files in the .DS_Store file
+.DS_Store
+
+# Ignore all files in the .eslintcache file
+.eslintcache
+
+# Ignore all files in the .next directory (for Next.js projects)
+.next/**
+
+# Ignore all files in the out directory (for Next.js projects)
+out/**
+
+# Ignore all files in the public directory (for Next.js projects)
+public/**
+
+# Ignore all files in the vercel directory (for Vercel projects)
+vercel/**
+
+# Ignore all files in the now directory (for Now projects)
+now/**
+
+# Ignore all files in the coverage directory (for Jest projects)
+coverage/**
+
+# Ignore all files in the .nyc_output directory (for Jest projects)
+.nyc_output/**
+
+# Ignore all files in the jest.config.js file (for Jest projects)
+jest.config.js
+
+# Ignore all files in the tsconfig.json file (for TypeScript projects)
+tsconfig.json
+
+# Ignore all files in the package-lock.json file (for npm projects)
+package-lock.json
+
+# Ignore all files in the yarn.lock file (for Yarn projects)
+yarn.lock
+
+# Ignore all files in the .yarn directory (for Yarn projects)
+.yarn/**
+
+# Ignore all files in the .pnp.js file (for Yarn projects)
+.pnp.js
