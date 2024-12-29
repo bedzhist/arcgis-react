@@ -24,9 +24,17 @@ interface LayerListItemProps {
 
 const LayerListItem = (props: LayerListItemProps) => {
   const [visible, setVisible] = useState(props.item.visible);
-  const [actionsSections, setActionsSections] = useState(
-    props.item.actionsSections
-  );
+  const [actionsSections] = useState(props.item.actionsSections);
+  const [toggledActions, setToggledActions] = useState<string[]>(() => {
+    return props.item.actionsSections.reduce<string[]>((acc, section) => {
+      return acc.concat(
+        section
+          .filter((action) => action.type === 'toggle' && action.value === true)
+          .map((action) => action.id)
+          .toArray()
+      );
+    }, []);
+  });
 
   const handleVisibilityClick = (
     event: React.MouseEvent<HTMLCalciteActionElement, MouseEvent>
@@ -55,6 +63,16 @@ const LayerListItem = (props: LayerListItemProps) => {
     const item = props.item;
     item.visible = !item.visible;
   };
+  const toggleAction = (action: __esri.ActionButton | __esri.ActionToggle) => {
+    if (action.type !== 'toggle') return;
+    const value = action.value;
+    action.value = !value;
+    if (action.value) {
+      setToggledActions([...toggledActions, action.id]);
+    } else {
+      setToggledActions(toggledActions.filter((id) => id !== action.id));
+    }
+  };
 
   useEffect(() => {
     const item = props.item;
@@ -63,21 +81,6 @@ const LayerListItem = (props: LayerListItemProps) => {
     });
     return () => {
       visibilityHandle.remove();
-    };
-  }, [props.item]);
-  useEffect(() => {
-    const item = props.item;
-    const actionsSectionsHandle = reactiveUtils.watch(
-      () => item.actionsSections,
-      (actionsSections) => {
-        setActionsSections(actionsSections.clone());
-      },
-      {
-        initial: true
-      }
-    );
-    return () => {
-      actionsSectionsHandle.remove();
     };
   }, [props.item]);
 
@@ -120,7 +123,8 @@ const LayerListItem = (props: LayerListItemProps) => {
                   text={action.title}
                   textEnabled
                   scale="s"
-                  appearance="transparent"
+                  active={toggledActions.includes(action.id)}
+                  onClick={() => toggleAction(action)}
                 />
               );
             })
