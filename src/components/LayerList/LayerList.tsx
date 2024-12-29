@@ -22,19 +22,26 @@ interface LayerListItemProps {
   operationalItems: __esri.Collection<__esri.ListItem>;
 }
 
+const getToggledActions = (
+  actionsSections: __esri.Collection<
+    __esri.Collection<__esri.ActionButton | __esri.ActionToggle>
+  >
+) => {
+  return actionsSections.reduce<string[]>((acc, section) => {
+    return acc.concat(
+      section
+        .filter((action) => action.type === 'toggle' && action.value === true)
+        .map((action) => action.id)
+        .toArray()
+    );
+  }, []);
+};
+
 const LayerListItem = (props: LayerListItemProps) => {
   const [visible, setVisible] = useState(props.item.visible);
-  const [actionsSections] = useState(props.item.actionsSections);
-  const [toggledActions, setToggledActions] = useState<string[]>(() => {
-    return props.item.actionsSections.reduce<string[]>((acc, section) => {
-      return acc.concat(
-        section
-          .filter((action) => action.type === 'toggle' && action.value === true)
-          .map((action) => action.id)
-          .toArray()
-      );
-    }, []);
-  });
+  const [toggledActions, setToggledActions] = useState<string[]>(() =>
+    getToggledActions(props.item.actionsSections)
+  );
 
   const handleVisibilityClick = (
     event: React.MouseEvent<HTMLCalciteActionElement, MouseEvent>
@@ -67,11 +74,15 @@ const LayerListItem = (props: LayerListItemProps) => {
     if (action.type !== 'toggle') return;
     const value = action.value;
     action.value = !value;
-    if (action.value) {
+    /*  if (action.value) {
       setToggledActions([...toggledActions, action.id]);
     } else {
       setToggledActions(toggledActions.filter((id) => id !== action.id));
-    }
+    } */
+    /*  const actionToggle = actionsSections.getItemAt(0).getItemAt(1);
+    if (actionToggle.type !== 'toggle') return;
+    actionToggle.value = !actionToggle.value;
+    console.log(action, actionToggle); */
   };
 
   useEffect(() => {
@@ -81,6 +92,17 @@ const LayerListItem = (props: LayerListItemProps) => {
     });
     return () => {
       visibilityHandle.remove();
+    };
+  }, [props.item]);
+  useEffect(() => {
+    const toggledActionsHandle = reactiveUtils.watch(
+      () => getToggledActions(props.item.actionsSections),
+      (toggledActions) => {
+        setToggledActions(toggledActions);
+      }
+    );
+    return () => {
+      toggledActionsHandle.remove();
     };
   }, [props.item]);
 
@@ -106,7 +128,7 @@ const LayerListItem = (props: LayerListItemProps) => {
         {props.item.title}
       </div>
       {props.children}
-      {actionsSections.length > 0 && (
+      {props.item.actionsSections.length > 0 && (
         <CalciteActionMenu
           label="Actions"
           slot="actions-end"
@@ -114,7 +136,7 @@ const LayerListItem = (props: LayerListItemProps) => {
           placement="bottom-end"
           scale="s"
         >
-          {actionsSections.map((actionsSection) =>
+          {props.item.actionsSections.map((actionsSection) =>
             actionsSection.map((action, i) => {
               return (
                 <CalciteAction
