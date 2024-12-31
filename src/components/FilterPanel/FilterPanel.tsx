@@ -18,14 +18,14 @@ import {
   CalciteComboboxCustomEvent,
   CalciteInputCustomEvent,
   CalciteSelectCustomEvent
-} from '@esri/calcite-components/dist/types';
+} from '@esri/calcite-components';
 import _ from 'lodash';
 import { createRef, useEffect, useMemo, useState } from 'react';
 import { ArcGISLayer } from '../../types';
-import LayerListCombobox, {
-  LayerListComboboxChangeItem,
-  LayerListComboboxItem
-} from '../LayerListCombobox';
+import CalciteLayerListCombobox, {
+  CalciteLayerListComboboxChangeItem,
+  CalciteLayerListComboboxItem
+} from '../CalciteLayerListCombobox';
 
 interface FilterPanelProps {
   view?: __esri.MapView;
@@ -58,9 +58,8 @@ interface FilterPanelOperatorItem {
 }
 
 export const FilterPanel = (props: FilterPanelProps) => {
-  const [layerItem, setLayerItem] = useState<LayerListComboboxItem | null>(
-    null
-  );
+  const [layerItem, setLayerItem] =
+    useState<CalciteLayerListComboboxItem | null>(null);
   const [expressions, setExpressions] = useState<FilterPanelExpression[]>([]);
   const [logicalOperator, setLogicalOperator] =
     useState<FilterPanelLogicalOperator>(FilterPanelLogicalOperator.AND);
@@ -80,7 +79,9 @@ export const FilterPanel = (props: FilterPanelProps) => {
     ];
   }, []);
 
-  const handleLayerChange = async (item: LayerListComboboxChangeItem) => {
+  const handleLayerChange = async (
+    item: CalciteLayerListComboboxChangeItem
+  ) => {
     if (Array.isArray(item)) return;
     if (item) {
       const layer = item.layer as ArcGISLayer;
@@ -269,12 +270,12 @@ export const FilterPanel = (props: FilterPanelProps) => {
         </CalciteNotice>
         <CalciteLabel>
           Layer
-          <LayerListCombobox
+          <CalciteLayerListCombobox
             view={props.view}
             label="Layer"
             selectionMode="single"
             value={layerItem?.id ?? ''}
-            onLayerListComboboxChange={handleLayerChange}
+            onCalciteLayerListComboboxChange={handleLayerChange}
             overlayPositioning="fixed"
           />
         </CalciteLabel>

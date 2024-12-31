@@ -38,6 +38,7 @@ arcgis-react-app/
 │   ├── assets: Asset files
 │   ├── config: Configuration files
 │   ├── contexts: React contexts
+│   ├── hooks: Custom hooks
 │   ├── styles: Styling
 │   ├── types: Type definitions
 │   └── utils: Utility functions

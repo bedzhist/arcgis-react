@@ -4,12 +4,14 @@ import MapImageLayer from '@arcgis/core/layers/MapImageLayer';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import EsriLayerList from '@arcgis/core/widgets/LayerList';
+import Slider from '@arcgis/core/widgets/Slider';
 import {
   CalcitePanel,
   CalciteShell,
   CalciteShellPanel
 } from '@esri/calcite-components-react';
 import { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom/client';
 import LayerList from './components/LayerList';
 import {
   PERMITS_LAYER_ID,
@@ -32,14 +34,44 @@ export function App() {
           title: 'Zoom to',
           icon: 'magnifying-glass-plus',
           id: 'zoom-to'
+        }
+      ],
+      [
+        {
+          title: 'Zoom out',
+          icon: 'magnifying-glass-minus',
+          id: 'zoom-out'
         },
         {
-          title: 'Zoom to full extent',
-          icon: 'zoom-out-fixed',
-          id: 'zoom-out'
+          title: 'Zoom in',
+          icon: 'magnifying-glass-plus',
+          id: 'zoom-in'
         }
       ]
     ]);
+    const panelDiv = document.createElement('div');
+    const panelRoot = ReactDOM.createRoot(panelDiv);
+    panelRoot.render(
+      <>
+        <h1>Panel content</h1>
+      </>
+    );
+    const slider = new Slider({
+      min: 0,
+      max: 1,
+      precision: 2,
+      values: [1],
+      visibleElements: {
+        labels: true,
+        rangeLabels: true
+      }
+    });
+    const panel: __esri.ListItemPanelProperties = {
+      content: slider,
+      icon: 'sliders-horizontal',
+      title: 'Panel title'
+    };
+    item.set('panel', panel);
   };
 
   useEffect(() => {
@@ -80,26 +112,25 @@ export function App() {
               title: 'Zoom to',
               className: 'esri-icon-zoom-in-magnifying-glass',
               id: 'zoom-to'
-            },
-            {
-              title: 'Zoom to full extent',
-              className: 'esri-icon-zoom-out-fixed',
-              id: 'zoom-out'
-            }
-          ],
-          [
-            {
-              title: 'Edit',
-              className: 'esri-icon-pencil',
-              id: 'edit'
-            },
-            {
-              title: 'Delete',
-              className: 'esri-icon-trash',
-              id: 'delete'
             }
           ]
         ]);
+        const slider = new Slider({
+          min: 0,
+          max: 1,
+          precision: 2,
+          values: [1],
+          visibleElements: {
+            labels: true,
+            rangeLabels: true
+          }
+        });
+        const panel: __esri.ListItemPanelProperties = {
+          content: slider,
+          icon: 'sliders-horizontal',
+          title: 'Change layer opacity'
+        };
+        item.set('panel', panel);
       }
     });
     mapView.ui.add(layerListWidget, 'top-right');
