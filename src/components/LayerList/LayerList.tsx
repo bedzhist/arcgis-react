@@ -12,11 +12,7 @@ export interface LayerListProps {
 }
 
 export const LayerList = (props: LayerListProps) => {
-  const layerListVM = useValue<__esri.LayerListViewModel>(
-    new LayerListViewModel({
-      listItemCreatedFunction: props.listItemCreatedFunction
-    })
-  );
+  const layerListVM = useValue<__esri.LayerListViewModel | null>(null);
 
   const [operationalItems, setOperationalItems] =
     useState<__esri.Collection<__esri.ListItem>>();
@@ -43,8 +39,17 @@ export const LayerList = (props: LayerListProps) => {
     if (!view) {
       return;
     }
+    layerListVM.current = new LayerListViewModel({
+      listItemCreatedFunction: props.listItemCreatedFunction,
+      view
+    });
     const currLayerListVM = layerListVM.current;
-    currLayerListVM.view = view;
+    const stateHandle = reactiveUtils.when(
+      () => currLayerListVM.state === 'ready',
+      () => {
+        setOperationalItems(currLayerListVM.operationalItems.clone());
+      }
+    );
     const watchHandle = reactiveUtils.watch(
       () =>
         currLayerListVM.operationalItems
@@ -52,29 +57,34 @@ export const LayerList = (props: LayerListProps) => {
           .filter((item) => !!item.title)
           .toArray(),
       () => {
+        console.log('render', currLayerListVM.operationalItems.length);
         setOperationalItems(currLayerListVM.operationalItems.clone());
       }
     );
     return () => {
       watchHandle.remove();
+      stateHandle.remove();
     };
   }, [props.view]);
 
   return (
     <div ref={props.ref}>
-      {operationalItems && operationalItems.length > 0 ? (
-        <CalciteList filterEnabled>{renderItems(operationalItems)}</CalciteList>
-      ) : (
-        <div className="m-5">
-          <CalciteNotice
-            open
-            icon="information"
-            kind="info"
-          >
-            <div slot="message">There are currently no items to display.</div>
-          </CalciteNotice>
-        </div>
-      )}
+      {operationalItems &&
+        (operationalItems.length > 0 ? (
+          <CalciteList filterEnabled>
+            {renderItems(operationalItems)}
+          </CalciteList>
+        ) : (
+          <div className="m-5">
+            <CalciteNotice
+              open
+              icon="information"
+              kind="info"
+            >
+              <div slot="message">There are currently no items to display.</div>
+            </CalciteNotice>
+          </div>
+        ))}
     </div>
   );
 };

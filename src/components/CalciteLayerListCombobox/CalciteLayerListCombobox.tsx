@@ -169,7 +169,7 @@ export const CalciteLayerListCombobox = (
     return () => {
       layerListVMHandle.remove();
     };
-  }, [mapView, layerTypes, onCalciteLayerListComboboxUpdate]);
+  }, [mapView, layerTypes, onCalciteLayerListComboboxUpdate, layerListVM]);
 
   return (
     <CalciteCombobox
