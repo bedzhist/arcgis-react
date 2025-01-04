@@ -1,12 +1,17 @@
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
-import { CalciteShell } from '@esri/calcite-components-react';
+import {
+  CalcitePanel,
+  CalciteShell,
+  CalciteShellPanel
+} from '@esri/calcite-components-react';
 import { useEffect, useRef, useState } from 'react';
+import AddData from './components/AddData';
 
 export function App() {
   const viewRef = useRef<HTMLDivElement>(null);
 
-  const [, setView] = useState<__esri.MapView>();
+  const [view, setView] = useState<__esri.MapView>();
 
   useEffect(() => {
     const viewEl = viewRef.current;
@@ -28,6 +33,16 @@ export function App() {
 
   return (
     <CalciteShell>
+      <CalciteShellPanel
+        slot="panel-start"
+        position="start"
+        layout="vertical"
+        resizable
+      >
+        <CalcitePanel>
+          <AddData view={view} />
+        </CalcitePanel>
+      </CalciteShellPanel>
       <div
         ref={viewRef}
         className="h-100"
