@@ -177,7 +177,7 @@ export const CalciteLayerListCombobox = (
       onCalciteComboboxChange={handleCalciteComboboxChange}
     >
       {comboboxItems || (
-        <div className="m-7 text-center text-1">No layers available</div>
+        <div className="m-7 text-center text-color-2">No layers available</div>
       )}
     </CalciteCombobox>
   );

@@ -44,6 +44,22 @@ $spacing: (
     padding-bottom: $value !important;
   }
 
+  .p-inline-#{$name} {
+    padding-inline: $value !important;
+  }
+
+  .p-block-#{$name} {
+    padding-block: $value !important;
+  }
+
+  .ps-#{$name} {
+    padding-inline-start: $value !important;
+  }
+
+  .pe-#{$name} {
+    padding-inline-end: $value !important;
+  }
+
   .m-#{$name} {
     margin: $value !important;
   }
@@ -312,7 +328,6 @@ $outlineOffset: (
   }
 }
 
-
 $dimensionValues: (
   25: 25%,
   50: 50%,
@@ -327,6 +342,10 @@ $dimensionValues: (
 
   .h-#{$name} {
     height: $value !important;
+  }
+
+  .inline-size-#{$name} {
+    inline-size: $value !important;
   }
 }
 
@@ -573,7 +592,7 @@ $textColors: (
 );
 
 @each $name, $value in $textColors {
-  .text-#{$name} {
+  .text-color-#{$name} {
     color: $value !important;
   }
 }
@@ -695,5 +714,16 @@ $overflowValues: (
 
   .overflow-y-#{$name} {
     overflow-y: $value !important;
+  }
+}
+
+$boxSizingValues: (
+  border: border-box,
+  content: content-box,
+);
+
+@each $name, $value in $boxSizingValues {
+  .box-#{$name} {
+    box-sizing: $value !important;
   }
 }
