@@ -7,6 +7,7 @@ import {
 } from '@esri/calcite-components-react';
 import { useEffect, useRef, useState } from 'react';
 import AddData from './components/AddData';
+import LayerList from '@arcgis/core/widgets/LayerList';
 
 export function App() {
   const viewRef = useRef<HTMLDivElement>(null);
@@ -23,9 +24,16 @@ export function App() {
     });
     const mapView = new MapView({
       map,
-      container: viewEl
+      container: viewEl,
+      popup: {
+        defaultPopupTemplateEnabled: true
+      }
     });
     setView(mapView);
+    const layerListWidget = new LayerList({
+      view: mapView
+    });
+    mapView.ui.add(layerListWidget, 'top-right');
     return () => {
       mapView.destroy();
     };
