@@ -90,6 +90,7 @@ const createLayersFromFeatureCollection = (
         renderer.symbol.style = 'backward-diagonal';
         break;
       default:
+        // TODO: Handle error
         break;
     }
     const featureLayer = new FeatureLayer({
