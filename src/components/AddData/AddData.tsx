@@ -22,12 +22,12 @@ export function AddData(props: AddDataProps) {
     async () => {
       const view = props.view;
       if (!view) {
-        // Handle error
+        // TODO: Handle error
         return null;
       }
       const file = inputFileRef.current?.files?.[0];
       if (!(file instanceof File) || file.size === 0) {
-        // Handle error
+        // TODO: Handle error
         return null;
       }
       let layer: Layer | null = null;
@@ -39,7 +39,7 @@ export function AddData(props: AddDataProps) {
           break;
         }
         default:
-          // Handle error
+          //TODO: Handle error
           return null;
       }
       view.map.add(layer);
