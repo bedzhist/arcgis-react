@@ -24,10 +24,7 @@ export function App() {
     });
     const mapView = new MapView({
       map,
-      container: viewEl,
-      popup: {
-        defaultPopupTemplateEnabled: true
-      }
+      container: viewEl
     });
     setView(mapView);
     const layerListWidget = new LayerList({
@@ -46,6 +43,9 @@ export function App() {
         position="start"
         layout="vertical"
         resizable
+        style={{
+          '--calcite-shell-panel-max-width': '600px'
+        }}
       >
         <CalcitePanel>
           <AddData view={view} />

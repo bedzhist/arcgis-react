@@ -29,6 +29,10 @@ interface FeatureCollection {
         };
       };
     };
+    popupInfo?: {
+      title: string;
+      description: string;
+    };
   }[];
 }
 
@@ -36,17 +40,23 @@ export interface AddDataProps {
   view?: __esri.MapView;
 }
 
-const createLayersFromFeatureCollection = (
+const buildLayersFromCollection = (
   featureCollection: FeatureCollection
-): FeatureLayer[] => {
+): {
+  layers: FeatureLayer[];
+  allGraphics: Graphic[];
+} => {
+  const allGraphics: Graphic[] = [];
   const layers = featureCollection.layers.map((layer) => {
-    const graphics = layer.featureSet.features?.map((feature) => {
+    const title = layer.layerDefinition.name;
+    const objectIdField = layer.layerDefinition.objectIdField;
+    const source = layer.featureSet.features?.map((feature) => {
       return Graphic.fromJSON(feature);
     });
     const fields = layer.layerDefinition.fields.map((field) => {
       return Field.fromJSON(field);
     });
-    const renderer = layer.layerDefinition.drawingInfo.renderer;
+    /* const renderer = layer.layerDefinition.drawingInfo.renderer;
     switch (renderer.symbol.type) {
       case 'esriSMS':
         renderer.symbol.type = 'simple-marker';
@@ -92,18 +102,45 @@ const createLayersFromFeatureCollection = (
       default:
         // TODO: Handle error
         break;
-    }
+    } */
+    const popupTemplate = layer.popupInfo
+      ? {
+          title: layer.popupInfo.title,
+          content: layer.popupInfo.description
+        }
+      : undefined;
     const featureLayer = new FeatureLayer({
-      title: layer.layerDefinition.name,
-      objectIdField: layer.layerDefinition.objectIdField,
-      source: graphics,
+      title,
+      objectIdField,
+      source,
       fields,
-      renderer
+      // renderer,
+      popupTemplate
     });
+    if (source) {
+      allGraphics.push(...source);
+    }
     return featureLayer;
   });
-  return layers;
+  return {
+    layers,
+    allGraphics
+  };
 };
+const readFileAsText = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      resolve(reader.result as string);
+    };
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+};
+
+const GENERATE_SERVICE_URL =
+  'https://www.arcgis.com/sharing/rest/content/features/generate';
+const KML_SERVICE_URL = 'https://www.arcgis.com/sharing/kml';
 
 export function AddData(props: AddDataProps) {
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -154,23 +191,17 @@ export function AddData(props: AddDataProps) {
           };
           const body = new FormData();
           body.append('file', file);
-          const response = await esriRequest(
-            'https://www.arcgis.com/sharing/rest/content/features/generate',
-            {
-              query,
-              body: body,
-              responseType: 'json'
-            }
-          );
+          const response = await esriRequest(GENERATE_SERVICE_URL, {
+            query,
+            body: body,
+            responseType: 'json'
+          });
           const featureCollection: FeatureCollection =
             response.data.featureCollection;
-          const layers = createLayersFromFeatureCollection(featureCollection);
-          const sourceGraphics: Graphic[] = [];
-          layers.forEach((layer) => {
-            sourceGraphics.push(...layer.source);
-          });
+          const { layers, allGraphics } =
+            buildLayersFromCollection(featureCollection);
           view.map.addMany(layers);
-          view.goTo(sourceGraphics);
+          view.goTo(allGraphics);
           break;
         }
         case 'application/geo+json': {
@@ -184,43 +215,64 @@ export function AddData(props: AddDataProps) {
         }
         case 'application/vnd.google-earth.kml+xml': {
           // TODO: fix this because it's not working as expected
-          /* const readFileAsText = (file: File): Promise<string> => {
-            return new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onload = () => {
-                resolve(reader.result as string);
-              };
-              reader.onerror = reject;
-              reader.readAsText(file);
-            });
-          };
           const kmlString = await readFileAsText(file);
           const query = {
-            kmlString: encodeURIComponent(kmlString),
-            model: 'simple',
-            folders: ''
+            kmlString: encodeURIComponent(kmlString)
           };
-          const response = await esriRequest(
-            'https://www.arcgis.com/sharing/kml',
-            {
-              query,
-              responseType: 'json'
-            }
-          );
+          const response = await esriRequest(KML_SERVICE_URL, {
+            query,
+            responseType: 'json'
+          });
           const featureCollection: FeatureCollection =
             response.data.featureCollection;
-          const layers = createLayersFromFeatureCollection(featureCollection);
-          const sourceGraphics: Graphic[] = [];
-          layers.forEach((layer) => {
-            sourceGraphics.push(...layer.source);
-          });
+          const { layers, allGraphics } =
+            buildLayersFromCollection(featureCollection);
           view.map.addMany(layers);
-          view.goTo(sourceGraphics); */
+          view.goTo(allGraphics);
           break;
         }
-        default:
+        case 'application/vnd.google-earth.kmz': {
+          // TODO: implement this
+          break;
+        }
+        case '': {
+          if (file.name.endsWith('.gpx')) {
+            const params = {
+              name: file.name,
+              targetSR: view.spatialReference,
+              maxRecordCount: 1000,
+              enforceInputFileSizeLimit: true,
+              enforceOutputJsonSizeLimit: true,
+              generalize: true,
+              maxAllowableOffset: 10,
+              reducePrecision: true,
+              numberOfDigitsAfterDecimal: 0
+            };
+            const query = {
+              filetype: 'gpx',
+              publishParameters: JSON.stringify(params),
+              f: 'json'
+            };
+            const body = new FormData();
+            body.append('file', file);
+            const response = await esriRequest(GENERATE_SERVICE_URL, {
+              query,
+              body: body,
+              responseType: 'json'
+            });
+            const featureCollection: FeatureCollection =
+              response.data.featureCollection;
+            const { layers, allGraphics } =
+              buildLayersFromCollection(featureCollection);
+            view.map.addMany(layers);
+            view.goTo(allGraphics);
+          }
+          break;
+        }
+        default: {
           //TODO: Handle error
           return null;
+        }
       }
       return null;
     },
@@ -270,7 +322,14 @@ export function AddData(props: AddDataProps) {
             <input
               ref={inputFileRef}
               type="file"
-              accept=".csv,.zip,.geojson,.kml"
+              accept=".csv,.zip,.geojson,.kml,.kmz,.gpx"
+              className="d-flex border-1 border-dashed border-color-input bg-1 cursor-pointer inline-size-100 box-border text-3 font-default focus:outline-2 focus:outline-color-brand"
+              style={{
+                outlineOffset: '-2px',
+                paddingInline: '0.75rem',
+                paddingBlock: '.25rem',
+                blockSize: '2rem'
+              }}
             />
           </CalciteLabel>
           <CalciteButton
