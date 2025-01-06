@@ -15,6 +15,7 @@ import {
   CalciteTabTitle
 } from '@esri/calcite-components-react';
 import { useActionState, useRef } from 'react';
+import esriConfig from '@arcgis/core/config';
 
 interface FeatureCollection {
   layers: {
@@ -138,9 +139,7 @@ const readFileAsText = (file: File): Promise<string> => {
   });
 };
 
-const GENERATE_SERVICE_URL =
-  'https://www.arcgis.com/sharing/rest/content/features/generate';
-const KML_SERVICE_URL = 'https://www.arcgis.com/sharing/kml';
+const GENERATE_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/content/features/generate`;
 
 export function AddData(props: AddDataProps) {
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -219,7 +218,7 @@ export function AddData(props: AddDataProps) {
           const query = {
             kmlString: encodeURIComponent(kmlString)
           };
-          const response = await esriRequest(KML_SERVICE_URL, {
+          const response = await esriRequest(esriConfig.kmlServiceUrl, {
             query,
             responseType: 'json'
           });
