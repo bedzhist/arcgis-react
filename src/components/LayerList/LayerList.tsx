@@ -17,6 +17,27 @@ export const LayerList = (props: LayerListProps) => {
   const [operationalItems, setOperationalItems] =
     useState<__esri.Collection<__esri.ListItem>>();
 
+  const handleItemVisibilityClick = async (
+    event: React.MouseEvent<HTMLCalciteActionElement, MouseEvent>,
+    value: boolean,
+    item: __esri.ListItem
+  ) => {
+    const parent = item.parent;
+    const shiftKey = event.shiftKey;
+    if (shiftKey) {
+      if (parent) {
+        parent.children.forEach((child) => {
+          if (child.hidden) return;
+          child.visible = value;
+        });
+      } else {
+        operationalItems?.forEach((operationalItem) => {
+          if (operationalItem.hidden) return;
+          operationalItem.visible = value;
+        });
+      }
+    }
+  };
   const renderItems = (items: __esri.Collection<__esri.ListItem>) => {
     if (!operationalItems) return null;
     return items.map((item, i) => {
@@ -24,7 +45,7 @@ export const LayerList = (props: LayerListProps) => {
         <LayerListItem
           key={i}
           item={item}
-          operationalItems={operationalItems}
+          onVisibilityClick={handleItemVisibilityClick}
         >
           {item.children.length > 0 && (
             <CalciteList>{renderItems(item.children)}</CalciteList>
@@ -57,7 +78,6 @@ export const LayerList = (props: LayerListProps) => {
           .filter((item) => !!item.title)
           .toArray(),
       () => {
-        console.log('render', currLayerListVM.operationalItems.length);
         setOperationalItems(currLayerListVM.operationalItems.clone());
       }
     );

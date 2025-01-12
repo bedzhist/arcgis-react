@@ -12,7 +12,11 @@ import { useEffect, useState } from 'react';
 export interface LayerListItemProps {
   children?: React.ReactNode;
   item: __esri.ListItem;
-  operationalItems: __esri.Collection<__esri.ListItem>;
+  onVisibilityClick?: (
+    event: React.MouseEvent<HTMLCalciteActionElement, MouseEvent>,
+    value: boolean,
+    item: __esri.ListItem
+  ) => void;
 }
 
 const getToggledActions = (
@@ -41,23 +45,9 @@ export const LayerListItem = (props: LayerListItemProps) => {
     event: React.MouseEvent<HTMLCalciteActionElement, MouseEvent>
   ) => {
     const item = props.item;
-    const parent = item.parent;
-    const shiftKey = event.shiftKey;
-    const visible = item.visible;
-    if (shiftKey) {
-      if (parent) {
-        parent.children.forEach((child) => {
-          if (child.hidden) return;
-          child.visible = !visible;
-        });
-      } else {
-        props.operationalItems.forEach((operationalItem) => {
-          if (operationalItem.hidden) return;
-          operationalItem.visible = !visible;
-        });
-      }
-    }
-    props.item.visible = !visible;
+    const newVisible = !item.visible;
+    item.visible = newVisible;
+    props.onVisibilityClick?.(event, newVisible, item);
   };
   const handleSelect = (event: CalciteListItemCustomEvent<void>) => {
     event.stopPropagation();
