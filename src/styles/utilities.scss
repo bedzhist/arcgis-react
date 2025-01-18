@@ -90,6 +90,14 @@ $spacing: (
     margin-bottom: $value !important;
   }
 
+  .ms-#{$name} {
+    margin-inline-start: $value !important;
+  }
+
+  .me-#{$name} {
+    margin-inline-end: $value !important;
+  }
+
 }
 
 $borderWidths: (
@@ -678,8 +686,10 @@ $textOverflow: (
     }
   }
 
-  .text-#{$name} {
-    text-overflow: $value !important;
+  @else {
+    .text-#{$name} {
+      text-overflow: $value !important;
+    }
   }
 }
 
