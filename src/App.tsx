@@ -44,6 +44,7 @@ export function App() {
         layout="vertical"
         resizable
         style={{
+          '--calcite-shell-panel-width': '400px',
           '--calcite-shell-panel-max-width': '600px'
         }}
       >

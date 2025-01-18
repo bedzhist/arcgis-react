@@ -738,3 +738,17 @@ $boxSizingValues: (
     box-sizing: $value !important;
   }
 }
+
+$objectFitValues: (
+  contain: contain,
+  cover: cover,
+  fill: fill,
+  none: none,
+  scale-down: scale-down,
+);
+
+@each $name, $value in $objectFitValues {
+  .object-fit-#{$name} {
+    object-fit: $value !important;
+  }
+}

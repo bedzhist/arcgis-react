@@ -11,22 +11,24 @@ import {
   default as request
 } from '@arcgis/core/request';
 import {
-  CalciteAvatar,
+  CalciteInputCustomEvent,
+  CalcitePaginationCustomEvent
+} from '@esri/calcite-components';
+import {
   CalciteButton,
   CalciteCard,
   CalciteCardGroup,
   CalciteInput,
   CalciteLabel,
   CalcitePagination,
+  CalciteProgress,
   CalciteTab,
   CalciteTabNav,
   CalciteTabs,
   CalciteTabTitle
 } from '@esri/calcite-components-react';
-import { CalcitePaginationCustomEvent } from '@esri/calcite-components';
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { useValue } from '../../hooks';
-
 interface FeatureCollection {
   layers: {
     featureSet: __esri.FeatureSetProperties;
@@ -47,7 +49,7 @@ interface FeatureCollection {
   }[];
 }
 
-interface ResultsItem {
+interface ResultItem {
   id: string;
   title: string;
   description: string;
@@ -163,11 +165,25 @@ const GENERATE_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/content/featu
 const COMMUNITY_GROUPS_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/community/groups`;
 const CONTENT_GROUPS_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/content/groups`;
 const RESULTS_PAGE_SIZE = 10;
+const LIVING_ATLAS_Q =
+  '(-typekeywords:"Elevation 3D Layer" AND -typekeywords:"IndoorPositioningDataService" AND -typekeywords:"Requires Subscription" AND -typekeywords:"Requires Credits") (ee) -typekeywords:("MapAreaPackage") -type:("Map Area" OR "Indoors Map Configuration" OR "Code Attachment")';
+const LIVING_ATLAS_FILTER =
+  '(type:"Map Service" OR type:"Image Service" OR type:"Feature Service" OR type:"Vector Tile Service" OR type:"OGCFeatureServer" OR type:"WMS" OR type:"WFS" OR type:"WMTS" OR type:"KML" OR type: "Stream Service" OR type: "Feed" OR type:"Media Layer" OR type:"Group Layer" OR type:"GeoJson" OR type:"Knowledge Graph Service" OR type:"Knowledge Graph Layer" OR (type: "Feature Service" AND typekeywords: "OrientedImageryLayer") OR (type: "Feature Service" AND typekeywords: "CatalogLayer") OR (type:"Feature Collection" AND typekeywords:"Route Layer") OR (type:"Feature collection" AND typekeywords:"Markup")) -typekeywords: "Table"';
+const ARCGIS_ITEM_TYPE_LOGO_BASE_URL =
+  'https://www.arcgis.com/apps/mapviewer/node_modules/@arcgis/app-components/dist/arcgis-app/assets/arcgis-item-type/';
+const ARCGIS_ITEM_TYPE_SVG = {
+  FEATURE: 'featureshosted16.svg',
+  MAP_IMAGE: 'mapimages16.svg',
+  GROUP: 'layergroup2d16.svg',
+  TILE: 'vectortile16.svg',
+  IMAGERY: 'imagery16.svg'
+};
 
 export function AddData(props: AddDataProps) {
   const inputFileRef = useRef<HTMLInputElement>(null);
 
   const livingAtlasGroupId = useValue<string>('');
+  const resultsSearchTimeout = useValue<number | null>(null);
 
   const [, fileFormAction, isFileFormLoading] = useActionState<null, FormData>(
     async () => {
@@ -310,41 +326,47 @@ export function AddData(props: AddDataProps) {
     },
     null
   );
-  const [resultItems, setResultItems] = useState<ResultsItem[]>();
+  const [resultItems, setResultItems] = useState<ResultItem[]>();
   const [resultsTotal, setResultsTotal] = useState<number>();
   const [resultsStart, setResultsStart] = useState<number>(1);
+  const [isResultsQueryLoading, setIsResultsQueryLoading] =
+    useState<boolean>(false);
 
   const fetchLivingAtlasResults = async (
     livingAtlasGroupId: string,
-    start?: number,
+    options?: {
+      start?: number;
+      q?: string;
+    },
     signal?: AbortSignal
   ) => {
     const query = {
       num: RESULTS_PAGE_SIZE,
-      start,
+      start: options?.start || resultsStart,
       sortField: 'modified',
       sortOrder: 'desc',
-      filter:
-        '(type:"Map Service" OR type:"Image Service" OR type:"Feature Service" OR type:"Vector Tile Service" OR type:"OGCFeatureServer" OR type:"WMS" OR type:"WFS" OR type:"WMTS" OR type:"KML" OR type: "Stream Service" OR type: "Feed" OR type:"Media Layer" OR type:"Group Layer" OR type:"GeoJson" OR type:"Knowledge Graph Service" OR type:"Knowledge Graph Layer" OR (type: "Feature Service" AND typekeywords: "OrientedImageryLayer") OR (type: "Feature Service" AND typekeywords: "CatalogLayer") OR (type:"Feature Collection" AND typekeywords:"Route Layer") OR (type:"Feature collection" AND typekeywords:"Markup")) -typekeywords: "Table"',
+      filter: LIVING_ATLAS_FILTER,
       enriched: true,
-      q: '(-typekeywords:"Elevation 3D Layer" AND -typekeywords:"IndoorPositioningDataService") -typekeywords:("MapAreaPackage") -type:("Map Area" OR "Indoors Map Configuration" OR "Code Attachment")',
+      q: options?.q || LIVING_ATLAS_Q,
       displaySublayers: true,
       displayHighlights: true,
       displayServiceProperties: true,
       f: 'json'
     };
     const contentGroupsSearchUrl = `${CONTENT_GROUPS_SERVICE_URL}/${livingAtlasGroupId}/search`;
+    setIsResultsQueryLoading(true);
     const response = await esriRequest(contentGroupsSearchUrl, {
       query,
       signal
     });
+    setIsResultsQueryLoading(false);
     const data = response.data;
     const results = data.results;
     setResultItems(results);
     setResultsTotal(data.total);
   };
   const addLayerFromPortalClick = async (
-    resultItem: ResultsItem,
+    resultItem: ResultItem,
     event: React.MouseEvent<HTMLCalciteButtonElement, MouseEvent>
   ) => {
     const view = props.view;
@@ -375,7 +397,43 @@ export function AddData(props: AddDataProps) {
     }
     const newStartItem = event.target.startItem;
     setResultsStart(newStartItem);
-    fetchLivingAtlasResults(currLivingAtlasGroupId, newStartItem);
+    fetchLivingAtlasResults(currLivingAtlasGroupId, {
+      start: newStartItem
+    });
+  };
+  const handleSearchResultsInput = (event: CalciteInputCustomEvent<void>) => {
+    const searchValue = event.target.value;
+    const currLivingAtlasGroupId = livingAtlasGroupId.current;
+    if (!currLivingAtlasGroupId) {
+      // Handle error
+      return;
+    }
+    setResultsStart(1);
+    const currResultsSearchTimeout = resultsSearchTimeout.current;
+    if (currResultsSearchTimeout) clearTimeout(currResultsSearchTimeout);
+    resultsSearchTimeout.current = setTimeout(() => {
+      fetchLivingAtlasResults(currLivingAtlasGroupId, {
+        q: `${LIVING_ATLAS_Q} ${searchValue}`
+      });
+    }, 500);
+  };
+  const getResultTypeLogoUrl = (type: string) => {
+    switch (type) {
+      case 'Feature Service':
+      case 'Feature Layer':
+        return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.FEATURE}`;
+      case 'Map Service':
+        return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.MAP_IMAGE}`;
+      case 'Group Layer':
+        return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.GROUP}`;
+      case 'Vector Tile Service':
+        return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.TILE}`;
+      case 'Image Service':
+        return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.IMAGERY}`;
+      default:
+        // TODO: Handle error
+        return '';
+    }
   };
 
   useEffect(() => {
@@ -396,7 +454,13 @@ export function AddData(props: AddDataProps) {
       );
       const newLivingAtlasGroupId = communityGroupsResponse.data.results[0].id;
       livingAtlasGroupId.current = newLivingAtlasGroupId;
-      fetchLivingAtlasResults(newLivingAtlasGroupId, resultsStart, signal);
+      fetchLivingAtlasResults(
+        newLivingAtlasGroupId,
+        {
+          start: resultsStart
+        },
+        signal
+      );
     };
     const abortController = new AbortController();
     init(abortController.signal);
@@ -417,6 +481,17 @@ export function AddData(props: AddDataProps) {
       </CalciteTabNav>
       <CalciteTab>
         <div className="d-flex flex-column h-100">
+          <CalciteInput
+            type="search"
+            placeholder="Search"
+            icon="search"
+            className="p-3"
+            onCalciteInputInput={handleSearchResultsInput}
+          />
+          <CalciteProgress
+            type="indeterminate"
+            hidden={!isResultsQueryLoading}
+          />
           <CalciteCardGroup
             label="Content Items"
             className="overflow-auto h-100"
@@ -427,26 +502,42 @@ export function AddData(props: AddDataProps) {
                 thumbnailPosition="inline-end"
                 className="w-100"
               >
-                <img
+                <div
                   slot="thumbnail"
-                  alt="Sample image alt"
-                  src={`${esriConfig.portalUrl}/sharing/rest/content/items/${resultItem.id}/info/${
-                    resultItem.thumbnail
-                  }`}
-                />
+                  className="w-100"
+                >
+                  <div
+                    className="ms-auto"
+                    style={{ width: '120px' }}
+                  >
+                    <img
+                      slot="thumbnail"
+                      alt="Sample image alt"
+                      className="w-100 object-fit-cover"
+                      src={`${esriConfig.portalUrl}/sharing/rest/content/items/${resultItem.id}/info/${
+                        resultItem.thumbnail
+                      }`}
+                    />
+                  </div>
+                </div>
                 <span slot="heading">{resultItem.title}</span>
-                <span slot="description">{resultItem.type}</span>
+                <div
+                  slot="description"
+                  className="d-flex items-center"
+                >
+                  <img
+                    alt="Layer type logo"
+                    src={getResultTypeLogoUrl(resultItem.type)}
+                    width={16}
+                    height={16}
+                  />
+                  <span className="ms-3">{resultItem.type}</span>
+                </div>
                 <div
                   slot="footer-start"
                   className="overflow-hidden"
                 >
-                  <CalciteAvatar
-                    scale="s"
-                    thumbnail={`${esriConfig.portalUrl}/sharing/rest/community/users/${
-                      resultItem.owner
-                    }/info/blob.png`}
-                  />
-                  <span className="text-truncate ms-3">{resultItem.owner}</span>
+                  <span className="text-truncate">{resultItem.owner}</span>
                 </div>
                 <CalciteButton
                   slot="footer-end"
