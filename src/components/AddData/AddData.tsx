@@ -435,6 +435,7 @@ export function AddData(props: AddDataProps) {
                   }`}
                 />
                 <span slot="heading">{resultItem.title}</span>
+                <span slot="description">{resultItem.type}</span>
                 <div
                   slot="footer-start"
                   className="overflow-hidden"
