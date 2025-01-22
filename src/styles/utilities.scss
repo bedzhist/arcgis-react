@@ -18,22 +18,12 @@ $spacing: (
     padding: $value !important;
   }
 
-  .pt-#{$name} {
-    padding-top: $value !important;
+  .m-#{$name} {
+    margin: $value !important;
   }
+}
 
-  .pr-#{$name} {
-    padding-right: $value !important;
-  }
-
-  .pb-#{$name} {
-    padding-bottom: $value !important;
-  }
-
-  .pl-#{$name} {
-    padding-left: $value !important;
-  }
-
+@each $name, $value in $spacing {
   .px-#{$name} {
     padding-left: $value !important;
     padding-right: $value !important;
@@ -60,26 +50,6 @@ $spacing: (
     padding-inline-end: $value !important;
   }
 
-  .m-#{$name} {
-    margin: $value !important;
-  }
-
-  .mt-#{$name} {
-    margin-top: $value !important;
-  }
-
-  .mr-#{$name} {
-    margin-right: $value !important;
-  }
-
-  .mb-#{$name} {
-    margin-bottom: $value !important;
-  }
-
-  .ml-#{$name} {
-    margin-left: $value !important;
-  }
-
   .mx-#{$name} {
     margin-left: $value !important;
     margin-right: $value !important;
@@ -97,7 +67,40 @@ $spacing: (
   .me-#{$name} {
     margin-inline-end: $value !important;
   }
+}
 
+@each $name, $value in $spacing {
+  .pt-#{$name} {
+    padding-top: $value !important;
+  }
+
+  .pr-#{$name} {
+    padding-right: $value !important;
+  }
+
+  .pb-#{$name} {
+    padding-bottom: $value !important;
+  }
+
+  .pl-#{$name} {
+    padding-left: $value !important;
+  }
+
+  .mt-#{$name} {
+    margin-top: $value !important;
+  }
+
+  .mr-#{$name} {
+    margin-right: $value !important;
+  }
+
+  .mb-#{$name} {
+    margin-bottom: $value !important;
+  }
+
+  .ml-#{$name} {
+    margin-left: $value !important;
+  }
 }
 
 $borderWidths: (
@@ -655,6 +658,25 @@ $fontSizes: (
 @each $name, $value in $fontSizes {
   .text-#{$name} {
     font-size: $value !important;
+  }
+}
+
+$lineHeights: (
+  sm: var(--calcite-font-line-height-fixed-sm),
+  base: var(--calcite-font-line-height-fixed-base),
+  lg: var(--calcite-font-line-height-fixed-lg),
+  xl: var(--calcite-font-line-height-fixed-xl),
+  default: var(--calcite-font-line-height-relative),
+  tight: var(--calcite-font-line-height-relative-tight),
+  snug: var(--calcite-font-line-height-relative-snug),
+  normal: var(--calcite-font-line-height-relative-normal),
+  relaxed: var(--calcite-font-line-height-relative-relaxed),
+  loose: var(--calcite-font-line-height-relative-loose),
+);
+
+@each $name, $value in $lineHeights {
+  .leading-#{$name} {
+    line-height: $value !important;
   }
 }
 

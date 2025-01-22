@@ -17,6 +17,9 @@ import {
 import {
   CalciteButton,
   CalciteCardGroup,
+  CalciteDropdown,
+  CalciteDropdownGroup,
+  CalciteDropdownItem,
   CalciteInput,
   CalciteLabel,
   CalcitePagination,
@@ -47,6 +50,11 @@ interface FeatureCollection {
       description: string;
     };
   }[];
+}
+
+enum ResultsSource {
+  LIVING_ATLAS = 'living-atlas',
+  ARCGIS_ONLINE = 'arcgis-online'
 }
 
 export interface AddDataProps {
@@ -155,11 +163,12 @@ const readFileAsText = (file: File): Promise<string> => {
 const GENERATE_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/content/features/generate`;
 const COMMUNITY_GROUPS_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/community/groups`;
 const CONTENT_GROUPS_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/content/groups`;
+const SEARCH_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/search`;
 const RESULTS_PAGE_SIZE = 10;
-const LIVING_ATLAS_Q =
-  '(-typekeywords:"Elevation 3D Layer" AND -typekeywords:"IndoorPositioningDataService" AND -typekeywords:"Requires Subscription" AND -typekeywords:"Requires Credits") (ee) -typekeywords:("MapAreaPackage") -type:("Map Area" OR "Indoors Map Configuration" OR "Code Attachment")';
-const LIVING_ATLAS_FILTER =
+const RESULTS_FILTER =
   '(type:"Map Service" OR type:"Image Service" OR type:"Feature Service" OR type:"Vector Tile Service" OR type:"OGCFeatureServer" OR type:"WMS" OR type:"WFS" OR type:"WMTS" OR type:"KML" OR type: "Stream Service" OR type: "Feed" OR type:"Media Layer" OR type:"Group Layer" OR type:"GeoJson" OR type:"Knowledge Graph Service" OR type:"Knowledge Graph Layer" OR (type: "Feature Service" AND typekeywords: "OrientedImageryLayer") OR (type: "Feature Service" AND typekeywords: "CatalogLayer") OR (type:"Feature Collection" AND typekeywords:"Route Layer") OR (type:"Feature collection" AND typekeywords:"Markup")) -typekeywords: "Table"';
+const RESULTS_Q =
+  '(-typekeywords:"Elevation 3D Layer" AND -typekeywords:"IndoorPositioningDataService" AND -typekeywords:"Requires Subscription" AND -typekeywords:"Requires Credits") -typekeywords:("MapAreaPackage") -type:("Map Area" OR "Indoors Map Configuration" OR "Code Attachment")';
 
 export function AddData(props: AddDataProps) {
   const inputFileRef = useRef<HTMLInputElement>(null);
@@ -313,8 +322,12 @@ export function AddData(props: AddDataProps) {
   const [resultsStart, setResultsStart] = useState<number>(1);
   const [isResultsQueryLoading, setIsResultsQueryLoading] =
     useState<boolean>(false);
+  const [resultsSource, setResultsSource] = useState<ResultsSource>(
+    ResultsSource.LIVING_ATLAS
+  );
+  const [resultsSearchValue, setResultsSearchValue] = useState<string>('');
 
-  const fetchLivingAtlasResults = async (
+  /* const fetchLivingAtlasResults = async (
     livingAtlasGroupId: string,
     options?: {
       start?: number;
@@ -327,9 +340,9 @@ export function AddData(props: AddDataProps) {
       start: options?.start || resultsStart,
       sortField: 'modified',
       sortOrder: 'desc',
-      filter: LIVING_ATLAS_FILTER,
+      filter: RESULTS_FILTER,
       enriched: true,
-      q: options?.q || LIVING_ATLAS_Q,
+      q: options?.q || RESULTS_Q,
       displaySublayers: true,
       displayHighlights: true,
       displayServiceProperties: true,
@@ -338,6 +351,55 @@ export function AddData(props: AddDataProps) {
     const contentGroupsSearchUrl = `${CONTENT_GROUPS_SERVICE_URL}/${livingAtlasGroupId}/search`;
     setIsResultsQueryLoading(true);
     const response = await esriRequest(contentGroupsSearchUrl, {
+      query,
+      signal
+    });
+    setIsResultsQueryLoading(false);
+    const data = response.data;
+    const results = data.results;
+    setResultItems(results);
+    setResultsTotal(data.total);
+  }; */
+  const fetchResults = async (
+    source: ResultsSource,
+    options?: {
+      start?: number;
+      q?: string;
+    },
+    signal?: AbortSignal
+  ) => {
+    const query = {
+      num: RESULTS_PAGE_SIZE,
+      start: options?.start || resultsStart,
+      sortField: 'modified',
+      sortOrder: 'desc',
+      filter: RESULTS_FILTER,
+      q: options?.q || RESULTS_Q,
+      displaySublayers: true,
+      displayHighlights: true,
+      displayServiceProperties: true,
+      f: 'json'
+    };
+    let url = '';
+    switch (source) {
+      case ResultsSource.LIVING_ATLAS: {
+        const currLivingAtlasGroupId = livingAtlasGroupId.current;
+        if (!currLivingAtlasGroupId) {
+          // Handle error
+          return;
+        }
+        url = `${CONTENT_GROUPS_SERVICE_URL}/${currLivingAtlasGroupId}/search`;
+        break;
+      }
+      case ResultsSource.ARCGIS_ONLINE:
+        url = SEARCH_SERVICE_URL;
+        break;
+      default:
+        // TODO: Handle error
+        return;
+    }
+    setIsResultsQueryLoading(true);
+    const response = await esriRequest(url, {
       query,
       signal
     });
@@ -379,12 +441,14 @@ export function AddData(props: AddDataProps) {
     }
     const newStartItem = event.target.startItem;
     setResultsStart(newStartItem);
-    fetchLivingAtlasResults(currLivingAtlasGroupId, {
-      start: newStartItem
+    fetchResults(resultsSource, {
+      start: newStartItem,
+      q: `${RESULTS_Q} ${resultsSearchValue}`
     });
   };
   const handleSearchResultsInput = (event: CalciteInputCustomEvent<void>) => {
     const searchValue = event.target.value;
+    setResultsSearchValue(searchValue);
     const currLivingAtlasGroupId = livingAtlasGroupId.current;
     if (!currLivingAtlasGroupId) {
       // Handle error
@@ -394,10 +458,27 @@ export function AddData(props: AddDataProps) {
     const currResultsSearchTimeout = resultsSearchTimeout.current;
     if (currResultsSearchTimeout) clearTimeout(currResultsSearchTimeout);
     resultsSearchTimeout.current = setTimeout(() => {
-      fetchLivingAtlasResults(currLivingAtlasGroupId, {
-        q: `${LIVING_ATLAS_Q} ${searchValue}`
+      fetchResults(resultsSource, {
+        q: `${RESULTS_Q} ${searchValue}`
       });
     }, 500);
+  };
+  const getResultsSource = (source: string) => {
+    switch (source) {
+      case ResultsSource.LIVING_ATLAS:
+        return 'Living Atlas';
+      case ResultsSource.ARCGIS_ONLINE:
+        return 'ArcGIS Online';
+      default:
+        // TODO: Handle error
+        return '';
+    }
+  };
+  const selectResultsSource = (source: ResultsSource) => {
+    setResultsSource(source);
+    fetchResults(source, {
+      q: `${RESULTS_Q} ${resultsSearchValue}`
+    });
   };
 
   useEffect(() => {
@@ -418,10 +499,11 @@ export function AddData(props: AddDataProps) {
       );
       const newLivingAtlasGroupId = communityGroupsResponse.data.results[0].id;
       livingAtlasGroupId.current = newLivingAtlasGroupId;
-      fetchLivingAtlasResults(
-        newLivingAtlasGroupId,
+      fetchResults(
+        resultsSource,
         {
-          start: resultsStart
+          start: resultsStart,
+          q: `${RESULTS_Q} ${resultsSearchValue}`
         },
         signal
       );
@@ -445,11 +527,53 @@ export function AddData(props: AddDataProps) {
       </CalciteTabNav>
       <CalciteTab>
         <div className="d-flex flex-column h-100">
+          <div className="d-flex justify-center py-4">
+            <CalciteDropdown
+              maxItems={0}
+              overlayPositioning="absolute"
+              placement="bottom-start"
+              type="click"
+              width-scale="m"
+              scale="m"
+            >
+              <CalciteButton
+                iconEnd="chevron-down"
+                slot="trigger"
+                alignment="center"
+                appearance="transparent"
+                kind="neutral"
+                scale="m"
+                type="button"
+                width="auto"
+              >
+                {getResultsSource(resultsSource)}
+              </CalciteButton>
+              <CalciteDropdownGroup>
+                <CalciteDropdownItem
+                  selected={resultsSource === ResultsSource.LIVING_ATLAS}
+                  onCalciteDropdownItemSelect={() =>
+                    selectResultsSource(ResultsSource.LIVING_ATLAS)
+                  }
+                >
+                  {getResultsSource(ResultsSource.LIVING_ATLAS)}
+                </CalciteDropdownItem>
+                <CalciteDropdownItem
+                  selected={resultsSource === ResultsSource.ARCGIS_ONLINE}
+                  onCalciteDropdownItemSelect={() =>
+                    selectResultsSource(ResultsSource.ARCGIS_ONLINE)
+                  }
+                >
+                  {getResultsSource(ResultsSource.ARCGIS_ONLINE)}
+                </CalciteDropdownItem>
+              </CalciteDropdownGroup>
+            </CalciteDropdown>
+          </div>
           <CalciteInput
             type="search"
             placeholder="Search"
             icon="search"
             className="p-3"
+            value={resultsSearchValue}
             onCalciteInputInput={handleSearchResultsInput}
           />
           <CalciteProgress
