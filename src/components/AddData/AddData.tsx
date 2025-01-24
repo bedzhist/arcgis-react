@@ -151,6 +151,7 @@ interface EsriFeatureCollection {
       features: {
         attributes: Record<string, unknown>;
         // TODO: Add geometry, popupInfo, and symbol
+        // TODO: (https://developers.arcgis.com/web-map-specification/objects/feature/)
       }[];
       geometryType: EsriGeometryType;
       spatialReference: {
@@ -587,7 +588,6 @@ export function AddData(props: AddDataProps) {
           break;
         }
         case 'application/vnd.google-earth.kml+xml': {
-          // TODO: fix this because it's not working as expected
           const kmlString = await readFileAsText(file);
           const query = {
             kmlString: encodeURIComponent(kmlString)
@@ -600,10 +600,6 @@ export function AddData(props: AddDataProps) {
             response.data.featureCollection;
           const { layers } = buildLayersFromCollection(featureCollection);
           view.map.addMany(layers);
-          break;
-        }
-        case 'application/vnd.google-earth.kmz': {
-          // TODO: implement this
           break;
         }
         case '': {
@@ -930,7 +926,7 @@ export function AddData(props: AddDataProps) {
             <input
               ref={inputFileRef}
               type="file"
-              accept=".csv,.zip,.geojson,.kml,.kmz,.gpx"
+              accept=".csv,.zip,.geojson,.kml,.gpx"
               className="d-flex border-1 border-dashed border-color-input bg-1 cursor-pointer inline-size-100 box-border text-3 font-default focus:outline-2 focus:outline-color-brand"
               style={{
                 outlineOffset: '-2px',
