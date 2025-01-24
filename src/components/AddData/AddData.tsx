@@ -11,33 +11,163 @@ import {
   default as request
 } from '@arcgis/core/request';
 import {
-  CalciteAvatar,
+  CalciteInputCustomEvent,
+  CalcitePaginationCustomEvent
+} from '@esri/calcite-components';
+import {
   CalciteButton,
-  CalciteCard,
   CalciteCardGroup,
+  CalciteDropdown,
+  CalciteDropdownGroup,
+  CalciteDropdownItem,
   CalciteInput,
   CalciteLabel,
   CalcitePagination,
+  CalciteProgress,
   CalciteTab,
   CalciteTabNav,
   CalciteTabs,
   CalciteTabTitle
 } from '@esri/calcite-components-react';
-import { CalcitePaginationCustomEvent } from '@esri/calcite-components';
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { useValue } from '../../hooks';
+import AddDataCard, { ResultItem } from '../AddDataCard';
+import { SimpleRenderer } from '@arcgis/core/renderers';
+import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
+import SimpleLineSymbol from '@arcgis/core/symbols/SimpleLineSymbol';
+import SimpleFillSymbol from '@arcgis/core/symbols/SimpleFillSymbol';
+import { UniqueValueRenderer } from '@arcgis/core/rasterRenderers';
+import UniqueValueInfo from '@arcgis/core/renderers/support/UniqueValueInfo';
+import PictureMarkerSymbol from '@arcgis/core/symbols/PictureMarkerSymbol';
 
-interface FeatureCollection {
+type EsriGeometryType =
+  | 'esriGeometryEnvelope'
+  | 'esriGeometryMultipoint'
+  | 'esriGeometryPoint'
+  | 'esriGeometryPolygon'
+  | 'esriGeometryPolyline';
+type EsriFieldType =
+  | 'esriFieldTypeBigInteger'
+  | 'esriFieldTypeBlob'
+  | 'esriFieldTypeDate'
+  | 'esriFieldTypeDateOnly'
+  | 'esriFieldTypeDouble'
+  | 'esriFieldTypeGeometry'
+  | 'esriFieldTypeGlobalID'
+  | 'esriFieldTypeGUID'
+  | 'esriFieldTypeInteger'
+  | 'esriFieldTypeOID'
+  | 'esriFieldTypeRaster'
+  | 'esriFieldTypeSingle'
+  | 'esriFieldTypeSmallInteger'
+  | 'esriFieldTypeString'
+  | 'esriFieldTypeTimeOnly'
+  | 'esriFieldTypeTimestampOffset'
+  | 'esriFieldTypeXML';
+type EsriSMSStyle =
+  | 'esriSMSCircle'
+  | 'esriSMSCross'
+  | 'esriSMSDiamond'
+  | 'esriSMSSquare'
+  | 'esriSMSTriangle'
+  | 'esriSMSX';
+type EsriSLSStyle =
+  | 'esriSLSSolid'
+  | 'esriSLSDash'
+  | 'esriSLSDashDot'
+  | 'esriSLSDashDotDot'
+  | 'esriSLSDot'
+  | 'esriSLSLongDash'
+  | 'esriSLSLongDashDot'
+  | 'esriSLSNull'
+  | 'esriSLSShortDash'
+  | 'esriSLSShortDashDot'
+  | 'esriSLSShortDashDotDot'
+  | 'esriSLSShortDot';
+type EsriSFSStyle =
+  | 'esriSFSSolid'
+  | 'esriSFSForwardDiagonal'
+  | 'esriSFSBackwardDiagonal'
+  | 'esriSFSCross'
+  | 'esriSFSDiagonalCross'
+  | 'esriSFSHorizontal'
+  | 'esriSFSVertical';
+
+interface EsriSMSymbol {
+  angle: number;
+  color: number[];
+  outline: {
+    color: number[];
+    width: number;
+  };
+  size: number;
+  style: EsriSMSStyle;
+  type: 'esriSMS';
+}
+interface EsriPMSymbol {
+  angle: number;
+  contentType: string;
+  height: number;
+  imageData: string;
+  type: 'esriPMS';
+  url: string;
+  width: number;
+  xoffset: number;
+  style: EsriSMSStyle;
+  yoffset: number;
+}
+interface EsriSLSSymbol {
+  color: number[];
+  style: EsriSLSStyle;
+  type: 'esriSLS';
+  width: number;
+}
+interface EsriSFSymbol {
+  color: number[];
+  style: EsriSFSStyle;
+  type: 'esriSFS';
+}
+interface EsriSimpleRenderer {
+  symbol: EsriSMSymbol | EsriPMSymbol | EsriSLSSymbol | EsriSFSymbol;
+  type: 'simple';
+}
+interface EsriUniqueValueRenderer {
+  defaultLabel: string;
+  defaultSymbol: EsriSMSymbol | EsriPMSymbol | EsriSLSSymbol | EsriSFSymbol;
+  field1: string;
+  field2: string;
+  field3: string;
+  fieldDelimiter: string;
+  type: 'uniqueValue';
+  uniqueValueInfos: {
+    label: string;
+    symbol: EsriSMSymbol | EsriPMSymbol | EsriSLSSymbol | EsriSFSymbol;
+    value: string;
+  }[];
+}
+interface EsriFeatureCollection {
   layers: {
-    featureSet: __esri.FeatureSetProperties;
+    featureSet: {
+      features: {
+        attributes: Record<string, unknown>;
+        // TODO: Add geometry, popupInfo, and symbol
+        // TODO: (https://developers.arcgis.com/web-map-specification/objects/feature/)
+      }[];
+      geometryType: EsriGeometryType;
+      spatialReference: {
+        wkid: number;
+      };
+    };
     layerDefinition: {
       name: string;
       objectIdField: string;
-      fields: __esri.FieldProperties[];
+      fields: {
+        name: string;
+        alias: string;
+        type: EsriFieldType;
+      }[];
       drawingInfo: {
-        renderer: __esri.SimpleRendererProperties & {
-          symbol: __esri.SymbolProperties & { type: string; style: string };
-        };
+        renderer: EsriSimpleRenderer | EsriUniqueValueRenderer;
       };
     };
     popupInfo?: {
@@ -47,21 +177,110 @@ interface FeatureCollection {
   }[];
 }
 
-interface ResultsItem {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  thumbnail: string;
-  owner: string;
+enum ResultsSource {
+  LIVING_ATLAS = 'living-atlas',
+  ARCGIS_ONLINE = 'arcgis-online'
 }
 
 export interface AddDataProps {
   view?: __esri.MapView;
 }
 
+const convertMarkerSymbolStyle = (symbolStyle: EsriSMSStyle) => {
+  let style: __esri.SimpleMarkerSymbol['style'] | null = null;
+  switch (symbolStyle) {
+    case 'esriSMSCircle':
+      style = 'circle';
+      break;
+    case 'esriSMSCross':
+      style = 'cross';
+      break;
+    case 'esriSMSDiamond':
+      style = 'diamond';
+      break;
+    case 'esriSMSSquare':
+      style = 'square';
+      break;
+    case 'esriSMSTriangle':
+      style = 'triangle';
+      break;
+    case 'esriSMSX':
+      style = 'x';
+      break;
+  }
+  return style;
+};
+const convertLineSymbolStyle = (symbolStyle: EsriSLSStyle) => {
+  let style: __esri.SimpleLineSymbol['style'] | null = null;
+  switch (symbolStyle) {
+    case 'esriSLSSolid':
+      style = 'solid';
+      break;
+    case 'esriSLSDash':
+      style = 'dash';
+      break;
+    case 'esriSLSDashDot':
+      style = 'dash-dot';
+      break;
+    case 'esriSLSDashDotDot':
+      style = 'dash-dot';
+      break;
+    case 'esriSLSDot':
+      style = 'dot';
+      break;
+    case 'esriSLSLongDash':
+      style = 'long-dash';
+      break;
+    case 'esriSLSLongDashDot':
+      style = 'long-dash-dot';
+      break;
+    case 'esriSLSNull':
+      style = 'none';
+      break;
+    case 'esriSLSShortDash':
+      style = 'short-dash';
+      break;
+    case 'esriSLSShortDashDot':
+      style = 'short-dash-dot';
+      break;
+    case 'esriSLSShortDashDotDot':
+      style = 'short-dash-dot-dot';
+      break;
+    case 'esriSLSShortDot':
+      style = 'short-dot';
+      break;
+  }
+  return style;
+};
+const convertFillSymbolStyle = (symbolStyle: EsriSFSStyle) => {
+  let style: __esri.SimpleFillSymbol['style'] | null = null;
+  switch (symbolStyle) {
+    case 'esriSFSSolid':
+      style = 'solid';
+      break;
+    case 'esriSFSForwardDiagonal':
+      style = 'forward-diagonal';
+      break;
+    case 'esriSFSBackwardDiagonal':
+      style = 'backward-diagonal';
+      break;
+    case 'esriSFSCross':
+      style = 'cross';
+      break;
+    case 'esriSFSDiagonalCross':
+      style = 'diagonal-cross';
+      break;
+    case 'esriSFSHorizontal':
+      style = 'horizontal';
+      break;
+    case 'esriSFSVertical':
+      style = 'vertical';
+      break;
+  }
+  return style;
+};
 const buildLayersFromCollection = (
-  featureCollection: FeatureCollection
+  featureCollection: EsriFeatureCollection
 ): {
   layers: FeatureLayer[];
   allGraphics: Graphic[];
@@ -76,67 +295,198 @@ const buildLayersFromCollection = (
     const fields = layer.layerDefinition.fields.map((field) => {
       return Field.fromJSON(field);
     });
-    // TODO: Handle renderer
-    /* const renderer = layer.layerDefinition.drawingInfo.renderer;
-    switch (renderer.symbol.type) {
-      case 'esriSMS':
-        renderer.symbol.type = 'simple-marker';
+    const esriRenderer = layer.layerDefinition.drawingInfo.renderer;
+    let renderer:
+      | __esri.SimpleRenderer
+      | __esri.UniqueValueRenderer
+      | undefined = undefined;
+    switch (esriRenderer.type) {
+      case 'simple': {
+        renderer = new SimpleRenderer();
+        const esriSymbol = esriRenderer.symbol;
+        switch (esriSymbol.type) {
+          case 'esriSMS': {
+            const symbol = new SimpleMarkerSymbol({
+              ...esriSymbol,
+              type: 'simple-marker',
+              style: convertMarkerSymbolStyle(esriSymbol.style)
+            });
+            renderer.symbol = symbol;
+            break;
+          }
+          case 'esriPMS': {
+            const symbol = new PictureMarkerSymbol({
+              ...esriSymbol,
+              type: 'picture-marker'
+            });
+            renderer.symbol = symbol;
+            break;
+          }
+          case 'esriSLS': {
+            const symbol = new SimpleLineSymbol({
+              ...esriSymbol,
+              type: 'simple-line',
+              style: convertLineSymbolStyle(esriSymbol.style)
+            });
+            renderer.symbol = symbol;
+            break;
+          }
+          case 'esriSFS': {
+            const symbol = new SimpleFillSymbol({
+              ...esriSymbol,
+              type: 'simple-fill',
+              style: convertFillSymbolStyle(esriSymbol.style)
+            });
+            renderer.symbol = symbol;
+            break;
+          }
+          default: {
+            // TODO: Handle error
+            break;
+          }
+        }
         break;
-      case 'esriSLS':
-        renderer.symbol.type = 'simple-line';
+      }
+      case 'uniqueValue': {
+        renderer = new UniqueValueRenderer();
+        renderer.defaultLabel = esriRenderer.defaultLabel;
+        const defaultSymbol = esriRenderer.defaultSymbol;
+        switch (defaultSymbol.type) {
+          case 'esriSMS': {
+            const symbol = new SimpleMarkerSymbol({
+              ...defaultSymbol,
+              type: 'simple-marker',
+              style: convertMarkerSymbolStyle(defaultSymbol.style)
+            });
+            renderer.defaultSymbol = symbol;
+            break;
+          }
+          case 'esriPMS': {
+            const symbol = new PictureMarkerSymbol({
+              ...defaultSymbol,
+              type: 'picture-marker'
+            });
+            renderer.defaultSymbol = symbol;
+            break;
+          }
+          case 'esriSLS': {
+            const symbol = new SimpleLineSymbol({
+              ...defaultSymbol,
+              type: 'simple-line',
+              style: convertLineSymbolStyle(defaultSymbol.style)
+            });
+            renderer.defaultSymbol = symbol;
+            break;
+          }
+          case 'esriSFS': {
+            const symbol = new SimpleFillSymbol({
+              ...defaultSymbol,
+              type: 'simple-fill',
+              style: convertFillSymbolStyle(defaultSymbol.style)
+            });
+            renderer.defaultSymbol = symbol;
+            break;
+          }
+          default: {
+            // TODO: Handle error
+            break;
+          }
+        }
+        renderer.field = esriRenderer.field1;
+        renderer.uniqueValueInfos = esriRenderer.uniqueValueInfos.reduce(
+          (acc: __esri.UniqueValueInfo[], uniqueValueInfo) => {
+            const uniqueValueSymbol = uniqueValueInfo.symbol;
+            switch (uniqueValueSymbol.type) {
+              case 'esriSMS': {
+                const symbol = new SimpleMarkerSymbol({
+                  ...uniqueValueSymbol,
+                  type: 'simple-marker',
+                  style: convertMarkerSymbolStyle(uniqueValueSymbol.style)
+                });
+                acc.push(
+                  new UniqueValueInfo({
+                    label: uniqueValueInfo.label,
+                    symbol,
+                    value: uniqueValueInfo.value
+                  })
+                );
+                break;
+              }
+              case 'esriPMS': {
+                const symbol = new PictureMarkerSymbol({
+                  ...uniqueValueSymbol,
+                  type: 'picture-marker'
+                });
+                acc.push(
+                  new UniqueValueInfo({
+                    label: uniqueValueInfo.label,
+                    symbol,
+                    value: uniqueValueInfo.value
+                  })
+                );
+                break;
+              }
+              case 'esriSLS': {
+                const symbol = new SimpleLineSymbol({
+                  ...uniqueValueSymbol,
+                  type: 'simple-line',
+                  style: convertLineSymbolStyle(uniqueValueSymbol.style)
+                });
+                acc.push(
+                  new UniqueValueInfo({
+                    label: uniqueValueInfo.label,
+                    symbol,
+                    value: uniqueValueInfo.value
+                  })
+                );
+                break;
+              }
+              case 'esriSFS': {
+                const symbol = new SimpleFillSymbol({
+                  ...uniqueValueSymbol,
+                  type: 'simple-fill',
+                  style: convertFillSymbolStyle(uniqueValueSymbol.style)
+                });
+                acc.push(
+                  new UniqueValueInfo({
+                    label: uniqueValueInfo.label,
+                    symbol,
+                    value: uniqueValueInfo.value
+                  })
+                );
+                break;
+              }
+              default: {
+                // TODO: Handle error
+                break;
+              }
+            }
+            return acc;
+          },
+          []
+        );
         break;
-      case 'esriSFS':
-        renderer.symbol.type = 'simple-fill';
-        break;
-      case 'esriPMS':
-        renderer.symbol.type = 'picture-marker';
-        break;
-      case 'esriPFS':
-        renderer.symbol.type = 'picture-fill';
-        break;
-      default:
+      }
+      default: {
         // TODO: Handle error
         break;
+      }
     }
-    switch (renderer.symbol.style) {
-      case 'esriSLSSolid':
-        renderer.symbol.style = 'solid';
-        break;
-      case 'esriSLSDash':
-        renderer.symbol.style = 'dash';
-        break;
-      case 'esriSLSDashDotDot':
-        renderer.symbol.style = 'dash-dot-dot';
-        break;
-      case 'esriSLSDot':
-        renderer.symbol.style = 'dot';
-        break;
-      case 'esriSFSForwardDiagonal':
-        renderer.symbol.style = 'forward-diagonal';
-        break;
-      case 'esriSFSSolid':
-        renderer.symbol.style = 'solid';
-        break;
-      case 'esriSFSBackwardDiagonal':
-        renderer.symbol.style = 'backward-diagonal';
-        break;
-      default:
-        // TODO: Handle error
-        break;
-    } */
     const popupTemplate = layer.popupInfo
       ? {
           title: layer.popupInfo.title,
           content: layer.popupInfo.description
         }
       : undefined;
+    const spatialReference = layer.featureSet.spatialReference;
     const featureLayer = new FeatureLayer({
       title,
       objectIdField,
       source,
       fields,
-      // renderer,
-      popupTemplate
+      renderer,
+      popupTemplate,
+      spatialReference
     });
     if (source) {
       allGraphics.push(...source);
@@ -162,12 +512,18 @@ const readFileAsText = (file: File): Promise<string> => {
 const GENERATE_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/content/features/generate`;
 const COMMUNITY_GROUPS_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/community/groups`;
 const CONTENT_GROUPS_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/content/groups`;
+const SEARCH_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/search`;
 const RESULTS_PAGE_SIZE = 10;
+const RESULTS_FILTER =
+  '(type:"Map Service" OR type:"Image Service" OR type:"Feature Service" OR type:"Vector Tile Service" OR type:"OGCFeatureServer" OR type:"WMS" OR type:"WFS" OR type:"WMTS" OR type:"KML" OR type: "Stream Service" OR type: "Feed" OR type:"Media Layer" OR type:"Group Layer" OR type:"GeoJson" OR type:"Knowledge Graph Service" OR type:"Knowledge Graph Layer" OR (type: "Feature Service" AND typekeywords: "OrientedImageryLayer") OR (type: "Feature Service" AND typekeywords: "CatalogLayer") OR (type:"Feature Collection" AND typekeywords:"Route Layer") OR (type:"Feature collection" AND typekeywords:"Markup")) -typekeywords: "Table"';
+const RESULTS_Q =
+  '(-typekeywords:"Elevation 3D Layer" AND -typekeywords:"IndoorPositioningDataService" AND -typekeywords:"Requires Subscription" AND -typekeywords:"Requires Credits") -typekeywords:("MapAreaPackage") -type:("Map Area" OR "Indoors Map Configuration" OR "Code Attachment")';
 
 export function AddData(props: AddDataProps) {
   const inputFileRef = useRef<HTMLInputElement>(null);
 
   const livingAtlasGroupId = useValue<string>('');
+  const resultsSearchTimeout = useValue<number | null>(null);
 
   const [, fileFormAction, isFileFormLoading] = useActionState<null, FormData>(
     async () => {
@@ -218,7 +574,7 @@ export function AddData(props: AddDataProps) {
             body: body,
             responseType: 'json'
           });
-          const featureCollection: FeatureCollection =
+          const featureCollection: EsriFeatureCollection =
             response.data.featureCollection;
           const { layers } = buildLayersFromCollection(featureCollection);
           view.map.addMany(layers);
@@ -232,7 +588,6 @@ export function AddData(props: AddDataProps) {
           break;
         }
         case 'application/vnd.google-earth.kml+xml': {
-          // TODO: fix this because it's not working as expected
           const kmlString = await readFileAsText(file);
           const query = {
             kmlString: encodeURIComponent(kmlString)
@@ -241,14 +596,10 @@ export function AddData(props: AddDataProps) {
             query,
             responseType: 'json'
           });
-          const featureCollection: FeatureCollection =
+          const featureCollection: EsriFeatureCollection =
             response.data.featureCollection;
           const { layers } = buildLayersFromCollection(featureCollection);
           view.map.addMany(layers);
-          break;
-        }
-        case 'application/vnd.google-earth.kmz': {
-          // TODO: implement this
           break;
         }
         case '': {
@@ -276,7 +627,7 @@ export function AddData(props: AddDataProps) {
               body: body,
               responseType: 'json'
             });
-            const featureCollection: FeatureCollection =
+            const featureCollection: EsriFeatureCollection =
               response.data.featureCollection;
             const { layers } = buildLayersFromCollection(featureCollection);
             view.map.addMany(layers);
@@ -310,42 +661,19 @@ export function AddData(props: AddDataProps) {
     },
     null
   );
-  const [resultItems, setResultItems] = useState<ResultsItem[]>();
+  const [resultItems, setResultItems] = useState<ResultItem[]>();
   const [resultsTotal, setResultsTotal] = useState<number>();
   const [resultsStart, setResultsStart] = useState<number>(1);
+  const [isResultsQueryLoading, setIsResultsQueryLoading] =
+    useState<boolean>(false);
+  const [resultsSource, setResultsSource] = useState<ResultsSource>(
+    ResultsSource.LIVING_ATLAS
+  );
+  const [resultsSearchValue, setResultsSearchValue] = useState<string>('');
 
-  const fetchLivingAtlasResults = async (
-    livingAtlasGroupId: string,
-    start?: number,
-    signal?: AbortSignal
-  ) => {
-    const query = {
-      num: RESULTS_PAGE_SIZE,
-      start,
-      sortField: 'modified',
-      sortOrder: 'desc',
-      filter:
-        '(type:"Map Service" OR type:"Image Service" OR type:"Feature Service" OR type:"Vector Tile Service" OR type:"OGCFeatureServer" OR type:"WMS" OR type:"WFS" OR type:"WMTS" OR type:"KML" OR type: "Stream Service" OR type: "Feed" OR type:"Media Layer" OR type:"Group Layer" OR type:"GeoJson" OR type:"Knowledge Graph Service" OR type:"Knowledge Graph Layer" OR (type: "Feature Service" AND typekeywords: "OrientedImageryLayer") OR (type: "Feature Service" AND typekeywords: "CatalogLayer") OR (type:"Feature Collection" AND typekeywords:"Route Layer") OR (type:"Feature collection" AND typekeywords:"Markup")) -typekeywords: "Table"',
-      enriched: true,
-      q: '(-typekeywords:"Elevation 3D Layer" AND -typekeywords:"IndoorPositioningDataService") -typekeywords:("MapAreaPackage") -type:("Map Area" OR "Indoors Map Configuration" OR "Code Attachment")',
-      displaySublayers: true,
-      displayHighlights: true,
-      displayServiceProperties: true,
-      f: 'json'
-    };
-    const contentGroupsSearchUrl = `${CONTENT_GROUPS_SERVICE_URL}/${livingAtlasGroupId}/search`;
-    const response = await esriRequest(contentGroupsSearchUrl, {
-      query,
-      signal
-    });
-    const data = response.data;
-    const results = data.results;
-    setResultItems(results);
-    setResultsTotal(data.total);
-  };
   const addLayerFromPortalClick = async (
-    resultItem: ResultsItem,
-    event: React.MouseEvent<HTMLCalciteButtonElement, MouseEvent>
+    event: React.MouseEvent<HTMLCalciteButtonElement, MouseEvent>,
+    item: ResultItem
   ) => {
     const view = props.view;
     if (!view) {
@@ -354,7 +682,7 @@ export function AddData(props: AddDataProps) {
     }
     const target = event.currentTarget;
     const portalItem = new PortalItem({
-      id: resultItem.id
+      id: item.id
     });
     target.loading = true;
     target.disabled = true;
@@ -364,6 +692,55 @@ export function AddData(props: AddDataProps) {
     target.loading = false;
     target.disabled = false;
     view.map.add(layer);
+  };
+  const fetchResults = async (
+    source: ResultsSource,
+    options?: {
+      start?: number;
+      q?: string;
+    },
+    signal?: AbortSignal
+  ) => {
+    const query = {
+      num: RESULTS_PAGE_SIZE,
+      start: options?.start || resultsStart,
+      sortField: 'modified',
+      sortOrder: 'desc',
+      filter: RESULTS_FILTER,
+      q: options?.q || RESULTS_Q,
+      displaySublayers: true,
+      displayHighlights: true,
+      displayServiceProperties: true,
+      f: 'json'
+    };
+    let url = '';
+    switch (source) {
+      case ResultsSource.LIVING_ATLAS: {
+        const currLivingAtlasGroupId = livingAtlasGroupId.current;
+        if (!currLivingAtlasGroupId) {
+          // Handle error
+          return;
+        }
+        url = `${CONTENT_GROUPS_SERVICE_URL}/${currLivingAtlasGroupId}/search`;
+        break;
+      }
+      case ResultsSource.ARCGIS_ONLINE:
+        url = SEARCH_SERVICE_URL;
+        break;
+      default:
+        // TODO: Handle error
+        return;
+    }
+    setIsResultsQueryLoading(true);
+    const response = await esriRequest(url, {
+      query,
+      signal
+    });
+    setIsResultsQueryLoading(false);
+    const data = response.data;
+    const results = data.results;
+    setResultItems(results);
+    setResultsTotal(data.total);
   };
   const handleResultsPaginationChange = (
     event: CalcitePaginationCustomEvent<void>
@@ -375,7 +752,44 @@ export function AddData(props: AddDataProps) {
     }
     const newStartItem = event.target.startItem;
     setResultsStart(newStartItem);
-    fetchLivingAtlasResults(currLivingAtlasGroupId, newStartItem);
+    fetchResults(resultsSource, {
+      start: newStartItem,
+      q: `${RESULTS_Q} ${resultsSearchValue}`
+    });
+  };
+  const handleSearchResultsInput = (event: CalciteInputCustomEvent<void>) => {
+    const searchValue = event.target.value;
+    setResultsSearchValue(searchValue);
+    const currLivingAtlasGroupId = livingAtlasGroupId.current;
+    if (!currLivingAtlasGroupId) {
+      // Handle error
+      return;
+    }
+    setResultsStart(1);
+    const currResultsSearchTimeout = resultsSearchTimeout.current;
+    if (currResultsSearchTimeout) clearTimeout(currResultsSearchTimeout);
+    resultsSearchTimeout.current = setTimeout(() => {
+      fetchResults(resultsSource, {
+        q: `${RESULTS_Q} ${searchValue}`
+      });
+    }, 500);
+  };
+  const getResultsSource = (source: string) => {
+    switch (source) {
+      case ResultsSource.LIVING_ATLAS:
+        return 'Living Atlas';
+      case ResultsSource.ARCGIS_ONLINE:
+        return 'ArcGIS Online';
+      default:
+        // TODO: Handle error
+        return '';
+    }
+  };
+  const selectResultsSource = (source: ResultsSource) => {
+    setResultsSource(source);
+    fetchResults(source, {
+      q: `${RESULTS_Q} ${resultsSearchValue}`
+    });
   };
 
   useEffect(() => {
@@ -396,7 +810,14 @@ export function AddData(props: AddDataProps) {
       );
       const newLivingAtlasGroupId = communityGroupsResponse.data.results[0].id;
       livingAtlasGroupId.current = newLivingAtlasGroupId;
-      fetchLivingAtlasResults(newLivingAtlasGroupId, resultsStart, signal);
+      fetchResults(
+        resultsSource,
+        {
+          start: resultsStart,
+          q: `${RESULTS_Q} ${resultsSearchValue}`
+        },
+        signal
+      );
     };
     const abortController = new AbortController();
     init(abortController.signal);
@@ -417,48 +838,69 @@ export function AddData(props: AddDataProps) {
       </CalciteTabNav>
       <CalciteTab>
         <div className="d-flex flex-column h-100">
+          <div className="d-flex justify-center py-4">
+            <CalciteDropdown
+              maxItems={0}
+              overlayPositioning="absolute"
+              placement="bottom-start"
+              type="click"
+              width-scale="m"
+              scale="m"
+            >
+              <CalciteButton
+                iconEnd="chevron-down"
+                slot="trigger"
+                alignment="center"
+                appearance="transparent"
+                kind="neutral"
+                scale="m"
+                type="button"
+                width="auto"
+              >
+                {getResultsSource(resultsSource)}
+              </CalciteButton>
+              <CalciteDropdownGroup>
+                <CalciteDropdownItem
+                  selected={resultsSource === ResultsSource.LIVING_ATLAS}
+                  onCalciteDropdownItemSelect={() =>
+                    selectResultsSource(ResultsSource.LIVING_ATLAS)
+                  }
+                >
+                  {getResultsSource(ResultsSource.LIVING_ATLAS)}
+                </CalciteDropdownItem>
+                <CalciteDropdownItem
+                  selected={resultsSource === ResultsSource.ARCGIS_ONLINE}
+                  onCalciteDropdownItemSelect={() =>
+                    selectResultsSource(ResultsSource.ARCGIS_ONLINE)
+                  }
+                >
+                  {getResultsSource(ResultsSource.ARCGIS_ONLINE)}
+                </CalciteDropdownItem>
+              </CalciteDropdownGroup>
+            </CalciteDropdown>
+          </div>
+          <CalciteInput
+            type="search"
+            placeholder="Search"
+            icon="search"
+            className="p-3"
+            value={resultsSearchValue}
+            onCalciteInputInput={handleSearchResultsInput}
+          />
+          <CalciteProgress
+            type="indeterminate"
+            hidden={!isResultsQueryLoading}
+          />
           <CalciteCardGroup
             label="Content Items"
-            className="overflow-auto h-100"
+            className="overflow-auto h-100 mb-3"
           >
             {resultItems?.map((resultItem) => (
-              <CalciteCard
+              <AddDataCard
                 key={resultItem.id}
-                thumbnailPosition="inline-end"
-                className="w-100"
-              >
-                <img
-                  slot="thumbnail"
-                  alt="Sample image alt"
-                  src={`${esriConfig.portalUrl}/sharing/rest/content/items/${resultItem.id}/info/${
-                    resultItem.thumbnail
-                  }`}
-                />
-                <span slot="heading">{resultItem.title}</span>
-                <span slot="description">{resultItem.type}</span>
-                <div
-                  slot="footer-start"
-                  className="overflow-hidden"
-                >
-                  <CalciteAvatar
-                    scale="s"
-                    thumbnail={`${esriConfig.portalUrl}/sharing/rest/community/users/${
-                      resultItem.owner
-                    }/info/blob.png`}
-                  />
-                  <span className="text-truncate ms-3">{resultItem.owner}</span>
-                </div>
-                <CalciteButton
-                  slot="footer-end"
-                  iconStart="plus"
-                  appearance="outline"
-                  kind="neutral"
-                  scale="s"
-                  onClick={(e) => addLayerFromPortalClick(resultItem, e)}
-                >
-                  Add
-                </CalciteButton>
-              </CalciteCard>
+                item={resultItem}
+                onAdd={addLayerFromPortalClick}
+              />
             ))}
           </CalciteCardGroup>
           <CalcitePagination
@@ -484,7 +926,7 @@ export function AddData(props: AddDataProps) {
             <input
               ref={inputFileRef}
               type="file"
-              accept=".csv,.zip,.geojson,.kml,.kmz,.gpx"
+              accept=".csv,.zip,.geojson,.kml,.gpx"
               className="d-flex border-1 border-dashed border-color-input bg-1 cursor-pointer inline-size-100 box-border text-3 font-default focus:outline-2 focus:outline-color-brand"
               style={{
                 outlineOffset: '-2px',
