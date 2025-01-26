@@ -9,7 +9,7 @@ export interface Alert {
 }
 
 export interface AlertContextStore {
-  showAlert: (alert: Alert) => void;
+  setAlert: (alert: Alert) => void;
   showErrorAlert: (errorAlert: Omit<Alert, 'kind'>) => void;
   showSuccessAlert: (successAlert: Omit<Alert, 'kind'>) => void;
   showInfoAlert: (infoAlert: Omit<Alert, 'kind'>) => void;

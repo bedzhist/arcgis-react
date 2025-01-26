@@ -184,7 +184,7 @@ enum ResultsSource {
 }
 
 export interface AddDataProps {
-  view?: __esri.MapView;
+  view?: __esri.MapView | __esri.SceneView;
 }
 
 const convertMarkerSymbolStyle = (symbolStyle: EsriSMSStyle) => {
@@ -756,6 +756,10 @@ export function AddData(props: AddDataProps) {
           return layer.fullExtent;
         })
       );
+      if (fullExtentList.length === 0) {
+        alertContext?.showDefaultErrorAlert();
+        return;
+      }
       const fullExtent = fullExtentList.reduce((acc, extent) => {
         return acc.union(extent);
       });

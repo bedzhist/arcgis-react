@@ -1,5 +1,7 @@
+import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
+import Expand from '@arcgis/core/widgets/Expand';
 import LayerList from '@arcgis/core/widgets/LayerList';
 import {
   CalciteAlert,
@@ -8,39 +10,33 @@ import {
   CalciteShellPanel
 } from '@esri/calcite-components-react';
 import { useEffect, useRef, useState } from 'react';
-import AddData from './components/AddData';
-import AlertContext, { Alert } from './contexts/AlertContext';
+import { AddData, Toggle3d, Toggle3dWidget } from './components';
+import AlertContext from './contexts/AlertContext';
+import { useAlert } from './hooks';
+import { US_VOTING_PRECINCTS_2008_ELECTION_LAYER_ID } from './utils';
 
 export function App() {
   const viewRef = useRef<HTMLDivElement>(null);
 
-  const [view, setView] = useState<__esri.MapView>();
-  const [alert, setAlert] = useState<Alert | null>(null);
+  const [toggle3dWidgets, setToggle3dWidgets] = useState<Toggle3dWidget[]>([]);
 
-  const setErrorAlert = (errorAlert: Omit<Alert, 'kind'>) =>
-    setAlert({ ...errorAlert, kind: 'danger' });
-  const setSuccessAlert = (successAlert: Omit<Alert, 'kind'>) =>
-    setAlert({ ...successAlert, kind: 'success' });
-  const setInfoAlert = (infoAlert: Omit<Alert, 'kind'>) =>
-    setAlert({ ...infoAlert, kind: 'info' });
-  const setWarningAlert = (warningAlert: Omit<Alert, 'kind'>) =>
-    setAlert({ ...warningAlert, kind: 'warning' });
-  const showDefaultErrorAlert = () =>
-    setAlert({
-      title: 'Error',
-      message:
-        'An error occurred. Please contact support if the problem persists.',
-      icon: 'exclamation-mark-triangle',
-      kind: 'danger'
-    });
+  const [alert, alertMethods] = useAlert();
+
+  const [view, setView] = useState<__esri.MapView | __esri.SceneView>();
 
   useEffect(() => {
     const viewEl = viewRef.current;
     if (!viewEl) {
       return;
     }
+    const layer = new FeatureLayer({
+      portalItem: {
+        id: US_VOTING_PRECINCTS_2008_ELECTION_LAYER_ID
+      }
+    });
     const map = new Map({
-      basemap: 'dark-gray-vector'
+      basemap: 'dark-gray-vector',
+      layers: [layer]
     });
     const mapView = new MapView({
       map,
@@ -50,23 +46,19 @@ export function App() {
     const layerListWidget = new LayerList({
       view: mapView
     });
-    mapView.ui.add(layerListWidget, 'top-right');
+    const layerListExpand = new Expand({
+      view: mapView,
+      content: layerListWidget
+    });
+    mapView.ui.add(layerListExpand, 'top-right');
+    setToggle3dWidgets([layerListWidget, layerListExpand]);
     return () => {
       mapView.destroy();
     };
   }, []);
 
   return (
-    <AlertContext
-      value={{
-        showAlert: setAlert,
-        showErrorAlert: setErrorAlert,
-        showSuccessAlert: setSuccessAlert,
-        showInfoAlert: setInfoAlert,
-        showWarningAlert: setWarningAlert,
-        showDefaultErrorAlert
-      }}
-    >
+    <AlertContext value={alertMethods}>
       <CalciteShell>
         <CalciteShellPanel
           slot="panel-start"
@@ -82,6 +74,11 @@ export function App() {
             <AddData view={view} />
           </CalcitePanel>
         </CalciteShellPanel>
+        <Toggle3d
+          view={view}
+          widgets={toggle3dWidgets}
+          onViewToggle={setView}
+        />
         <div
           ref={viewRef}
           className="h-100"
@@ -93,7 +90,7 @@ export function App() {
             kind={alert.kind}
             open
             label={alert.title}
-            onCalciteAlertClose={() => setAlert(null)}
+            onCalciteAlertClose={() => alertMethods.setAlert(null)}
             autoClose={alert.autoClose}
           >
             <div slot="title">{alert.title}</div>
