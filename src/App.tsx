@@ -1,4 +1,3 @@
-import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import Expand from '@arcgis/core/widgets/Expand';
@@ -13,10 +12,10 @@ import { useEffect, useRef, useState } from 'react';
 import { AddData, Toggle3d, Toggle3dWidget } from './components';
 import AlertContext from './contexts/AlertContext';
 import { useAlert } from './hooks';
-import { US_VOTING_PRECINCTS_2008_ELECTION_LAYER_ID } from './utils';
 
 export function App() {
   const viewRef = useRef<HTMLDivElement>(null);
+  const toggle3dRef = useRef<HTMLCalciteSegmentedControlElement>(null);
 
   const [toggle3dWidgets, setToggle3dWidgets] = useState<Toggle3dWidget[]>([]);
 
@@ -29,14 +28,8 @@ export function App() {
     if (!viewEl) {
       return;
     }
-    const layer = new FeatureLayer({
-      portalItem: {
-        id: US_VOTING_PRECINCTS_2008_ELECTION_LAYER_ID
-      }
-    });
     const map = new Map({
-      basemap: 'dark-gray-vector',
-      layers: [layer]
+      basemap: 'dark-gray-vector'
     });
     const mapView = new MapView({
       map,
@@ -51,6 +44,10 @@ export function App() {
       content: layerListWidget
     });
     mapView.ui.add(layerListExpand, 'top-right');
+    const toggle3dEl = toggle3dRef.current;
+    if (toggle3dEl) {
+      mapView.ui.add(toggle3dEl, 'bottom-right');
+    }
     setToggle3dWidgets([layerListWidget, layerListExpand]);
     return () => {
       mapView.destroy();
@@ -74,15 +71,17 @@ export function App() {
             <AddData view={view} />
           </CalcitePanel>
         </CalciteShellPanel>
-        <Toggle3d
-          view={view}
-          widgets={toggle3dWidgets}
-          onViewToggle={setView}
-        />
         <div
           ref={viewRef}
           className="h-100"
-        />
+        >
+          <Toggle3d
+            ref={toggle3dRef}
+            view={view}
+            widgets={toggle3dWidgets}
+            onViewToggle={setView}
+          />
+        </div>
         {alert && (
           <CalciteAlert
             slot="alerts"
@@ -92,6 +91,9 @@ export function App() {
             label={alert.title}
             onCalciteAlertClose={() => alertMethods.setAlert(null)}
             autoClose={alert.autoClose}
+            style={{
+              '--calcite-z-index-toast': 1000
+            }}
           >
             <div slot="title">{alert.title}</div>
             <div slot="message">{alert.message}</div>

@@ -314,11 +314,13 @@ export function AddData(props: AddDataProps) {
       const view = props.view;
       if (!view) {
         alertContext?.showDefaultErrorAlert();
+        console.error('View is not defined.');
         return null;
       }
       const inputFileEl = inputFileRef.current;
       if (!inputFileEl) {
         alertContext?.showDefaultErrorAlert();
+        console.error('Input file element is not defined.');
         return null;
       }
       const file = inputFileEl.files?.[0];
@@ -598,6 +600,7 @@ export function AddData(props: AddDataProps) {
             }
             default: {
               alertContext?.showDefaultErrorAlert();
+              console.error('Invalid default symbol type.');
               break;
             }
           }
@@ -665,6 +668,7 @@ export function AddData(props: AddDataProps) {
                 }
                 default: {
                   alertContext?.showDefaultErrorAlert();
+                  console.error('Invalid unique value symbol type.');
                   break;
                 }
               }
@@ -676,6 +680,7 @@ export function AddData(props: AddDataProps) {
         }
         default: {
           alertContext?.showDefaultErrorAlert();
+          console.error('Invalid renderer type.');
           break;
         }
       }
@@ -703,6 +708,7 @@ export function AddData(props: AddDataProps) {
           break;
         default: {
           alertContext?.showDefaultErrorAlert();
+          console.error('Invalid geometry type.');
           break;
         }
       }
@@ -758,6 +764,7 @@ export function AddData(props: AddDataProps) {
       );
       if (fullExtentList.length === 0) {
         alertContext?.showDefaultErrorAlert();
+        console.error('No full extents found.');
         return;
       }
       const fullExtent = fullExtentList.reduce((acc, extent) => {
@@ -811,6 +818,7 @@ export function AddData(props: AddDataProps) {
         break;
       default:
         alertContext?.showDefaultErrorAlert();
+        console.error('Invalid source.');
         return;
     }
     setIsResultsQueryLoading(true);
@@ -864,6 +872,7 @@ export function AddData(props: AddDataProps) {
         return 'ArcGIS Online';
       default:
         alertContext?.showDefaultErrorAlert();
+        console.error('Invalid source.');
         return '';
     }
   };
