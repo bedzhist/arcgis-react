@@ -750,9 +750,8 @@ export function AddData(props: AddDataProps) {
     const layer = await Layer.fromPortalItem({
       portalItem
     });
-    target.loading = false;
-    target.disabled = false;
     view.map.add(layer);
+    await view.whenLayerView(layer);
     if (layer.type === 'group') {
       const groupLayer = layer as __esri.GroupLayer;
       const layers = groupLayer.allLayers;
@@ -772,9 +771,10 @@ export function AddData(props: AddDataProps) {
       });
       view.goTo(fullExtent);
     } else {
-      await view.whenLayerView(layer);
       view.goTo(layer.fullExtent);
     }
+    target.loading = false;
+    target.disabled = false;
     alertContext?.showSuccessAlert({
       title: 'Layer Added',
       message: `The layer "${item.title}" has been added to the map.`,

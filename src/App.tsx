@@ -85,6 +85,7 @@ export function App() {
         {alert && (
           <CalciteAlert
             slot="alerts"
+            key={alert.id}
             icon={alert.icon}
             kind={alert.kind}
             open

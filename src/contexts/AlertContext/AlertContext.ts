@@ -1,6 +1,7 @@
 import { createContext } from 'react';
 
 export interface Alert {
+  id: string;
   title: string;
   message: string;
   icon: string;
@@ -8,12 +9,14 @@ export interface Alert {
   autoClose?: boolean;
 }
 
+export type AlertProps = Omit<Alert, 'id'>;
+
 export interface AlertContextStore {
-  setAlert: (alert: Alert) => void;
-  showErrorAlert: (errorAlert: Omit<Alert, 'kind'>) => void;
-  showSuccessAlert: (successAlert: Omit<Alert, 'kind'>) => void;
-  showInfoAlert: (infoAlert: Omit<Alert, 'kind'>) => void;
-  showWarningAlert: (warningAlert: Omit<Alert, 'kind'>) => void;
+  setAlert: (alert: Alert | null) => void;
+  showErrorAlert: (errorAlert: Omit<AlertProps, 'kind'>) => void;
+  showSuccessAlert: (successAlert: Omit<AlertProps, 'kind'>) => void;
+  showInfoAlert: (infoAlert: Omit<AlertProps, 'kind'>) => void;
+  showWarningAlert: (warningAlert: Omit<AlertProps, 'kind'>) => void;
   showDefaultErrorAlert: () => void;
 }
 
