@@ -323,7 +323,7 @@ export function AddData(props: AddDataProps) {
       }
       const file = inputFileEl.files?.[0];
       if (!(file instanceof File) || file.size === 0) {
-        alertContext?.setErrorAlert({
+        alertContext?.showErrorAlert({
           title: 'Error',
           message: 'Please select a valid file.',
           icon: 'exclamation-mark-triangle'
@@ -336,6 +336,8 @@ export function AddData(props: AddDataProps) {
             url: URL.createObjectURL(file)
           });
           view.map.add(layer);
+          await view.whenLayerView(layer);
+          view.goTo(layer.fullExtent);
           break;
         }
         case 'application/zip': {
@@ -364,8 +366,10 @@ export function AddData(props: AddDataProps) {
           });
           const featureCollection: EsriFeatureCollection =
             response.data.featureCollection;
-          const { layers } = buildLayersFromCollection(featureCollection);
+          const { layers, allGraphics } =
+            buildLayersFromCollection(featureCollection);
           view.map.addMany(layers);
+          view.goTo(allGraphics);
           break;
         }
         case 'application/geo+json': {
@@ -386,8 +390,10 @@ export function AddData(props: AddDataProps) {
           });
           const featureCollection: EsriFeatureCollection =
             response.data.featureCollection;
-          const { layers } = buildLayersFromCollection(featureCollection);
+          const { layers, allGraphics } =
+            buildLayersFromCollection(featureCollection);
           view.map.addMany(layers);
+          view.goTo(allGraphics);
           break;
         }
         case '': {
@@ -417,13 +423,15 @@ export function AddData(props: AddDataProps) {
             });
             const featureCollection: EsriFeatureCollection =
               response.data.featureCollection;
-            const { layers } = buildLayersFromCollection(featureCollection);
+            const { layers, allGraphics } =
+              buildLayersFromCollection(featureCollection);
             view.map.addMany(layers);
+            view.goTo(allGraphics);
           }
           break;
         }
         default: {
-          alertContext?.setErrorAlert({
+          alertContext?.showErrorAlert({
             title: 'Error',
             message: 'The file type is not supported.',
             icon: 'exclamation-mark-triangle'
@@ -431,10 +439,11 @@ export function AddData(props: AddDataProps) {
           return null;
         }
       }
-      alertContext?.setSuccessAlert({
+      alertContext?.showSuccessAlert({
         title: 'Layer Added',
         message: 'The layer has been added to the map.',
-        icon: 'layer'
+        icon: 'layer',
+        autoClose: true
       });
       return null;
     },
@@ -453,7 +462,7 @@ export function AddData(props: AddDataProps) {
         return null;
       }
       const layer = await Layer.fromArcGISServerUrl({ url }).catch(() => {
-        alertContext?.setErrorAlert({
+        alertContext?.showErrorAlert({
           title: 'Error',
           message: 'The URL provided is invalid.',
           icon: 'exclamation-mark-triangle'
@@ -463,11 +472,14 @@ export function AddData(props: AddDataProps) {
         return null;
       }
       view.map.add(layer);
-      alertContext?.setSuccessAlert({
+      alertContext?.showSuccessAlert({
         title: 'Layer Added',
         message: 'The layer has been added to the map.',
-        icon: 'layer'
+        icon: 'layer',
+        autoClose: true
       });
+      await view.whenLayerView(layer);
+      view.goTo(layer.fullExtent);
       return null;
     },
     null
@@ -585,7 +597,7 @@ export function AddData(props: AddDataProps) {
               break;
             }
             default: {
-              // TODO: Handle error
+              alertContext?.showDefaultErrorAlert();
               break;
             }
           }
@@ -735,10 +747,28 @@ export function AddData(props: AddDataProps) {
     target.loading = false;
     target.disabled = false;
     view.map.add(layer);
-    alertContext?.setSuccessAlert({
+    if (layer.type === 'group') {
+      const groupLayer = layer as __esri.GroupLayer;
+      const layers = groupLayer.allLayers;
+      const fullExtentList = await Promise.all(
+        layers.map(async (layer) => {
+          await view.whenLayerView(layer);
+          return layer.fullExtent;
+        })
+      );
+      const fullExtent = fullExtentList.reduce((acc, extent) => {
+        return acc.union(extent);
+      });
+      view.goTo(fullExtent);
+    } else {
+      await view.whenLayerView(layer);
+      view.goTo(layer.fullExtent);
+    }
+    alertContext?.showSuccessAlert({
       title: 'Layer Added',
       message: `The layer "${item.title}" has been added to the map.`,
-      icon: 'layer'
+      icon: 'layer',
+      autoClose: true
     });
   };
   const fetchResults = async (
@@ -855,7 +885,14 @@ export function AddData(props: AddDataProps) {
           query: communityGroupsQuery,
           signal
         }
-      );
+      ).catch((error) => {
+        if (error instanceof Error && error.name === 'AbortError') {
+          return null;
+        }
+      });
+      if (!communityGroupsResponse) {
+        return;
+      }
       const newLivingAtlasGroupId = communityGroupsResponse.data.results[0].id;
       livingAtlasGroupId.current = newLivingAtlasGroupId;
       fetchResults(

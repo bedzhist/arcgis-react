@@ -5,14 +5,15 @@ export interface Alert {
   message: string;
   icon: string;
   kind: HTMLCalciteAlertElement['kind'];
+  autoClose?: boolean;
 }
 
 export interface AlertContextStore {
-  setAlert: (alert: Alert) => void;
-  setErrorAlert: (errorAlert: Omit<Alert, 'kind'>) => void;
-  setSuccessAlert: (successAlert: Omit<Alert, 'kind'>) => void;
-  setInfoAlert: (infoAlert: Omit<Alert, 'kind'>) => void;
-  setWarningAlert: (warningAlert: Omit<Alert, 'kind'>) => void;
+  showAlert: (alert: Alert) => void;
+  showErrorAlert: (errorAlert: Omit<Alert, 'kind'>) => void;
+  showSuccessAlert: (successAlert: Omit<Alert, 'kind'>) => void;
+  showInfoAlert: (infoAlert: Omit<Alert, 'kind'>) => void;
+  showWarningAlert: (warningAlert: Omit<Alert, 'kind'>) => void;
   showDefaultErrorAlert: () => void;
 }
 

@@ -3,7 +3,8 @@ import {
   CalciteButton,
   CalcitePopover,
   CalciteAvatar,
-  CalciteLink
+  CalciteLink,
+  CalciteLoader
 } from '@esri/calcite-components-react';
 import esriConfig from '@arcgis/core/config';
 import { useState } from 'react';
@@ -14,7 +15,7 @@ interface User {
   created: number;
   culture: string;
   cultureFormat: string;
-  description: string;
+  description?: string;
   firstName: string;
   fullName: string;
   id: string;
@@ -55,7 +56,8 @@ const ARCGIS_ITEM_TYPE_SVG = {
   TILE: 'vectortile16.svg',
   IMAGERY: 'imagery16.svg',
   GEOJSON: 'data16.svg',
-  MEDIA: 'medialayer16.svg'
+  MEDIA: 'medialayer16.svg',
+  KML: 'features16.svg'
 };
 const USER_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/community/users`;
 const DEFAULT_RESULTS_THUMBNAIL_URL =
@@ -64,13 +66,16 @@ const DEFAULT_RESULTS_THUMBNAIL_URL =
 export function AddDataCard(props: AddDataCardProps) {
   const [ownerRef, setOwnerRef] = useState<HTMLSpanElement | null>(null);
   const [ownerUser, setOwnerUser] = useState<User | null>(null);
+  const [isOwnerLoading, setIsOwnerLoading] = useState<boolean>(false);
 
   const getResultTypeLogoUrl = (type: string) => {
     switch (type) {
       case 'Feature Service':
       case 'Feature Layer':
+      case 'WFS':
         return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.FEATURE}`;
       case 'Map Service':
+      case 'WMS':
         return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.MAP_IMAGE}`;
       case 'Group Layer':
         return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.GROUP}`;
@@ -82,9 +87,11 @@ export function AddDataCard(props: AddDataCardProps) {
         return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.GEOJSON}`;
       case 'Media Layer':
         return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.MEDIA}`;
+      case 'KML':
+        return `${ARCGIS_ITEM_TYPE_LOGO_BASE_URL}${ARCGIS_ITEM_TYPE_SVG.KML}`;
       default:
-        // TODO: Handle error
-        return '';
+        console.error(`Unknown item type: ${type}`);
+        return undefined;
     }
   };
   const handleAddClick = (
@@ -93,6 +100,7 @@ export function AddDataCard(props: AddDataCardProps) {
     props.onAdd(event, props.item);
   };
   const handleOwnerPopoverOpen = async () => {
+    setIsOwnerLoading(true);
     const response = await esriRequest(
       `${USER_SERVICE_URL}/${props.item.owner}`,
       {
@@ -101,9 +109,13 @@ export function AddDataCard(props: AddDataCardProps) {
         }
       }
     );
+    setIsOwnerLoading(false);
     setOwnerUser(response.data);
   };
-  const renderOwnerDescriptionContent = (description: string) => {
+  const renderOwnerDescriptionContent = (description?: string) => {
+    if (!description) {
+      return null;
+    }
     const parts = description.split(/(&#13;)/);
     const content = parts.map((part, index) => {
       if (part === '&#13;') {
@@ -140,8 +152,8 @@ export function AddDataCard(props: AddDataCardProps) {
         className="w-100"
       >
         <div
-          className="ms-auto"
-          style={{ width: '120px' }}
+          className="ms-auto bg-2"
+          style={{ width: '120px', height: '80px' }}
         >
           <img
             slot="thumbnail"
@@ -190,26 +202,30 @@ export function AddDataCard(props: AddDataCardProps) {
           offsetDistance={16}
           onCalcitePopoverOpen={handleOwnerPopoverOpen}
         >
-          {ownerUser && (
-            <div style={{ maxWidth: '300px' }}>
-              <div className="d-flex items-center gap-5 p-7">
-                <CalciteAvatar
-                  scale="m"
-                  thumbnail={`https://www.arcgis.com/sharing/rest/community/users/${ownerUser.username}/info/${ownerUser.thumbnail}`}
-                />
-                <div>
-                  <div className="text-4 font-bold">{ownerUser.fullName}</div>
-                  <div>Item managed by: {ownerUser.username}</div>
+          <div style={{ width: '300px' }}>
+            {isOwnerLoading && !ownerUser && <CalciteLoader label="" />}
+            {ownerUser && (
+              <>
+                <div className="d-flex items-center gap-5 p-7">
+                  <CalciteAvatar
+                    className="flex-none"
+                    scale="m"
+                    thumbnail={`https://www.arcgis.com/sharing/rest/community/users/${ownerUser.username}/info/${ownerUser.thumbnail}`}
+                  />
+                  <div>
+                    <div className="text-4 font-bold">{ownerUser.fullName}</div>
+                    <div>Item managed by: {ownerUser.username}</div>
+                  </div>
                 </div>
-              </div>
-              <div
-                className="text-2 leading-relaxed overflow-auto pt-0 p-7"
-                style={{ maxHeight: '15.5rem' }}
-              >
-                {renderOwnerDescriptionContent(ownerUser.description)}
-              </div>
-            </div>
-          )}
+                <div
+                  className="text-2 leading-relaxed overflow-auto pt-0 p-7"
+                  style={{ maxHeight: '15.5rem' }}
+                >
+                  {renderOwnerDescriptionContent(ownerUser.description)}
+                </div>
+              </>
+            )}
+          </div>
         </CalcitePopover>
       </div>
       <CalciteButton

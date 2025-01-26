@@ -59,11 +59,11 @@ export function App() {
   return (
     <AlertContext
       value={{
-        setAlert,
-        setErrorAlert,
-        setSuccessAlert,
-        setInfoAlert,
-        setWarningAlert,
+        showAlert: setAlert,
+        showErrorAlert: setErrorAlert,
+        showSuccessAlert: setSuccessAlert,
+        showInfoAlert: setInfoAlert,
+        showWarningAlert: setWarningAlert,
         showDefaultErrorAlert
       }}
     >
@@ -92,8 +92,9 @@ export function App() {
             icon={alert.icon}
             kind={alert.kind}
             open
-            label={alert?.title}
+            label={alert.title}
             onCalciteAlertClose={() => setAlert(null)}
+            autoClose={alert.autoClose}
           >
             <div slot="title">{alert.title}</div>
             <div slot="message">{alert.message}</div>
