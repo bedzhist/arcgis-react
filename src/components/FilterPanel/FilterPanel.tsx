@@ -28,7 +28,7 @@ import CalciteLayerListCombobox, {
 } from '../CalciteLayerListCombobox';
 
 interface FilterPanelProps {
-  view?: __esri.MapView;
+  view?: __esri.MapView | __esri.SceneView;
 }
 
 type FilterPanelLayer = __esri.Sublayer | __esri.FeatureLayer;
@@ -44,7 +44,8 @@ enum FilterPanelOperator {
   IS = 'IS',
   IS_NOT = 'IS_NOT',
   EQUALS = 'EQUALS',
-  NOT_EQUALS = 'NOT_EQUALS'
+  NOT_EQUALS = 'NOT_EQUALS',
+  CONTAINS = 'CONTAINS'
 }
 
 enum FilterPanelLogicalOperator {
@@ -75,7 +76,8 @@ export const FilterPanel = (props: FilterPanelProps) => {
       { value: FilterPanelOperator.IS, text: 'is' },
       { value: FilterPanelOperator.IS_NOT, text: 'is not' },
       { value: FilterPanelOperator.EQUALS, text: 'equals' },
-      { value: FilterPanelOperator.NOT_EQUALS, text: 'does not equal' }
+      { value: FilterPanelOperator.NOT_EQUALS, text: 'does not equal' },
+      { value: FilterPanelOperator.CONTAINS, text: 'contains' }
     ];
   }, []);
 
@@ -166,7 +168,11 @@ export const FilterPanel = (props: FilterPanelProps) => {
   const getOperators = (field: __esri.Field) => {
     switch (field.type) {
       case 'string':
-        return [FilterPanelOperator.IS, FilterPanelOperator.IS_NOT];
+        return [
+          FilterPanelOperator.IS,
+          FilterPanelOperator.IS_NOT,
+          FilterPanelOperator.CONTAINS
+        ];
       case 'oid':
       case 'integer':
       case 'big-integer':
@@ -226,21 +232,41 @@ export const FilterPanel = (props: FilterPanelProps) => {
         return;
       }
       const where = expressions
-        .map((expression) => {
-          if (expression.value === '') return '';
+        .reduce<string[]>((whereClauses, expression) => {
+          if (expression.value === '') return whereClauses;
           switch (expression.operator) {
             case FilterPanelOperator.IS:
-              return `${expression.field.name} = '${expression.value}'`;
+              whereClauses.push(
+                `${expression.field.name} = '${expression.value}'`
+              );
+              break;
             case FilterPanelOperator.IS_NOT:
-              return `${expression.field.name} != '${expression.value}'`;
+              whereClauses.push(
+                `${expression.field.name} != '${expression.value}'`
+              );
+              break;
             case FilterPanelOperator.EQUALS:
-              return `${expression.field.name} = ${expression.value}`;
+              whereClauses.push(
+                `${expression.field.name} = ${expression.value}`
+              );
+              break;
             case FilterPanelOperator.NOT_EQUALS:
-              return `${expression.field.name} != ${expression.value}`;
-            default:
-              return '';
+              whereClauses.push(
+                `${expression.field.name} != ${expression.value}`
+              );
+              break;
+            case FilterPanelOperator.CONTAINS:
+              whereClauses.push(
+                `${expression.field.name} LIKE '%${expression.value}%'`
+              );
+              break;
+            default: {
+              console.error('Unknown operator:', expression.operator);
+              return whereClauses;
+            }
           }
-        })
+          return whereClauses;
+        }, [])
         .join(` ${logicalOperator} `);
       layer.definitionExpression = where;
     };

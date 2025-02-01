@@ -1,10 +1,10 @@
 import MapView from '@arcgis/core/views/MapView';
 import SceneView from '@arcgis/core/views/SceneView';
+import { CalciteSegmentedControlCustomEvent } from '@esri/calcite-components';
 import {
   CalciteSegmentedControl,
   CalciteSegmentedControlItem
 } from '@esri/calcite-components-react';
-import { CalciteSegmentedControlCustomEvent } from '@esri/calcite-components';
 import { useEffect, useState } from 'react';
 import { useAlertContext } from '../../contexts/AlertContext';
 
@@ -62,12 +62,13 @@ export function Toggle3d(props: Toggle3dProps) {
   };
 
   useEffect(() => {
-    if (!props.view) {
+    const view = props.view;
+    if (!view) {
       return;
     }
-    if (props.view.type === '2d') {
+    if (view.type === '2d') {
       setValue(Toggle3dValue['2D']);
-    } else if (props.view.type === '3d') {
+    } else if (view.type === '3d') {
       setValue(Toggle3dValue['3D']);
     } else {
       alertContext?.showDefaultErrorAlert();
