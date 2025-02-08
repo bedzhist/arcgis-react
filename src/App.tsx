@@ -1,19 +1,18 @@
+import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import Expand from '@arcgis/core/widgets/Expand';
 import LayerList from '@arcgis/core/widgets/LayerList';
 import {
   CalciteAlert,
-  CalciteButton,
-  CalcitePanel,
   CalciteShell,
   CalciteShellPanel
 } from '@esri/calcite-components-react';
 import { useEffect, useRef, useState } from 'react';
-import { AddData, FilterPanel, Toggle3d, Toggle3dWidget } from './components';
+import { FilterPanel, Toggle3d, Toggle3dWidget } from './components';
 import AlertContext from './contexts/AlertContext';
 import { useAlert } from './hooks';
-import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
+import { US_VOTING_PRECINCTS_2008_ELECTION_LAYER_ID } from './utils';
 
 export function App() {
   const viewRef = useRef<HTMLDivElement>(null);
@@ -33,9 +32,12 @@ export function App() {
     const layer = new FeatureLayer({
       url: 'https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Landscape_Trees/FeatureServer/0'
     });
+    const layer2 = new FeatureLayer({
+      portalItem: { id: US_VOTING_PRECINCTS_2008_ELECTION_LAYER_ID }
+    });
     const map = new Map({
       basemap: 'dark-gray-vector',
-      layers: [layer]
+      layers: [layer, layer2]
     });
     const mapView = new MapView({
       map,

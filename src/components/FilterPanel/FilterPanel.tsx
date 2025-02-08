@@ -1,7 +1,8 @@
 import {
   CalciteComboboxCustomEvent,
   CalciteInputCustomEvent,
-  CalciteSelectCustomEvent
+  CalciteSelectCustomEvent,
+  CalciteListCustomEvent
 } from '@esri/calcite-components';
 import {
   CalciteButton,
@@ -91,6 +92,7 @@ export const FilterPanel = (props: FilterPanelProps) => {
       field: field,
       operator: operator,
       value: '',
+      values: [],
       fieldRef: createRef<HTMLCalciteComboboxElement | null>()
     };
     setExpressions((c) => [...c, newExpression]);
@@ -147,6 +149,27 @@ export const FilterPanel = (props: FilterPanelProps) => {
       c.map((exp) => (exp.id === expression.id ? { ...exp, value } : exp))
     );
   };
+  const handleExpressionValuesChange = (
+    event: CalciteListCustomEvent<void>,
+    expression: FilterExpression
+  ) => {
+    const values = event.target.selectedItems.map((item) => item.value);
+    setExpressions((c) =>
+      c.map((exp) => (exp.id === expression.id ? { ...exp, values } : exp))
+    );
+  };
+  const handleExpressionValuesRemove = (
+    value: string,
+    expression: FilterExpression
+  ) => {
+    setExpressions((c) =>
+      c.map((exp) =>
+        exp.id === expression.id
+          ? { ...exp, values: exp.values.filter((v) => v !== value) }
+          : exp
+      )
+    );
+  };
   const handleNoticeClose = () => {
     setIsNoticeOpen(false);
   };
@@ -160,32 +183,120 @@ export const FilterPanel = (props: FilterPanelProps) => {
       }
       const where = expressions
         .reduce<string[]>((whereClauses, expression) => {
-          if (expression.value === '') return whereClauses;
           switch (expression.operator) {
             case FilterOperator.IS:
-              whereClauses.push(
-                `${expression.field.name} = '${expression.value}'`
-              );
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} = '${expression.value}'`
+                );
+              }
               break;
             case FilterOperator.IS_NOT:
-              whereClauses.push(
-                `${expression.field.name} != '${expression.value}'`
-              );
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} != '${expression.value}'`
+                );
+              }
               break;
             case FilterOperator.EQUALS:
-              whereClauses.push(
-                `${expression.field.name} = ${expression.value}`
-              );
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} = ${expression.value}`
+                );
+              }
               break;
             case FilterOperator.NOT_EQUALS:
-              whereClauses.push(
-                `${expression.field.name} != ${expression.value}`
-              );
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} != ${expression.value}`
+                );
+              }
               break;
             case FilterOperator.CONTAINS:
-              whereClauses.push(
-                `${expression.field.name} LIKE '%${expression.value}%'`
-              );
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} LIKE '%${expression.value}%'`
+                );
+              }
+              break;
+            case FilterOperator.DOES_NOT_CONTAIN:
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} NOT LIKE '%${expression.value}%'`
+                );
+              }
+              break;
+            case FilterOperator.INCLUDES:
+              if (expression.values.length) {
+                const values = expression.values
+                  .map((value) => `'${value}'`)
+                  .join(',');
+                whereClauses.push(`${expression.field.name} IN (${values})`);
+              }
+              break;
+            case FilterOperator.EXCLUDES:
+              if (expression.values.length) {
+                const values = expression.values
+                  .map((value) => `'${value}'`)
+                  .join(',');
+                whereClauses.push(
+                  `${expression.field.name} NOT IN (${values})`
+                );
+              }
+              break;
+            case FilterOperator.STARTS_WITH:
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} LIKE '${expression.value}%'`
+                );
+              }
+              break;
+            case FilterOperator.ENDS_WITH:
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} LIKE '%${expression.value}'`
+                );
+              }
+              break;
+            case FilterOperator.IS_BLANK:
+              whereClauses.push(`${expression.field.name} IS NULL`);
+              break;
+            case FilterOperator.IS_NOT_BLANK:
+              whereClauses.push(`${expression.field.name} IS NOT NULL`);
+              break;
+            case FilterOperator.IS_EMPTY_STRING:
+              whereClauses.push(`${expression.field.name} = ''`);
+              break;
+            case FilterOperator.IS_NOT_EMPTY_STRING:
+              whereClauses.push(`${expression.field.name} != ''`);
+              break;
+            case FilterOperator.IS_AT_LEAST:
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} >= ${expression.value}`
+                );
+              }
+              break;
+            case FilterOperator.IS_LESS_THAN:
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} < ${expression.value}`
+                );
+              }
+              break;
+            case FilterOperator.IS_AT_MOST:
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} <= ${expression.value}`
+                );
+              }
+              break;
+            case FilterOperator.IS_GREATER_THAN:
+              if (expression.value) {
+                whereClauses.push(
+                  `${expression.field.name} > ${expression.value}`
+                );
+              }
               break;
             default: {
               console.error('Unknown operator:', expression.operator);
@@ -267,6 +378,8 @@ export const FilterPanel = (props: FilterPanelProps) => {
           onFieldChange={handleExpressionFieldChange}
           onOperatorChange={handleExpressionOperatorChange}
           onValueChange={handleExpressionValueChange}
+          onValuesChange={handleExpressionValuesChange}
+          onValuesRemove={handleExpressionValuesRemove}
           onDelete={handleExpressionDelete}
         />
       ))}
