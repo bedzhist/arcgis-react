@@ -4,14 +4,16 @@ import Expand from '@arcgis/core/widgets/Expand';
 import LayerList from '@arcgis/core/widgets/LayerList';
 import {
   CalciteAlert,
+  CalciteButton,
   CalcitePanel,
   CalciteShell,
   CalciteShellPanel
 } from '@esri/calcite-components-react';
 import { useEffect, useRef, useState } from 'react';
-import { AddData, Toggle3d, Toggle3dWidget } from './components';
+import { AddData, FilterPanel, Toggle3d, Toggle3dWidget } from './components';
 import AlertContext from './contexts/AlertContext';
 import { useAlert } from './hooks';
+import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 
 export function App() {
   const viewRef = useRef<HTMLDivElement>(null);
@@ -28,8 +30,12 @@ export function App() {
     if (!viewEl) {
       return;
     }
+    const layer = new FeatureLayer({
+      url: 'https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Landscape_Trees/FeatureServer/0'
+    });
     const map = new Map({
-      basemap: 'dark-gray-vector'
+      basemap: 'dark-gray-vector',
+      layers: [layer]
     });
     const mapView = new MapView({
       map,
@@ -67,9 +73,12 @@ export function App() {
             '--calcite-shell-panel-max-width': '600px'
           }}
         >
-          <CalcitePanel>
-            <AddData view={view} />
-          </CalcitePanel>
+          {/* <div className="p-3">
+            <CalciteButton appearance="transparent">
+              Select values
+            </CalciteButton>
+          </div> */}
+          <FilterPanel view={view} />
         </CalciteShellPanel>
         <div
           ref={viewRef}

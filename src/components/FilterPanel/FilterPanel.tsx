@@ -1,12 +1,11 @@
 import {
-  CalciteAction,
-  CalciteBlock,
+  CalciteComboboxCustomEvent,
+  CalciteInputCustomEvent,
+  CalciteSelectCustomEvent
+} from '@esri/calcite-components';
+import {
   CalciteButton,
-  CalciteCombobox,
-  CalciteComboboxItem,
-  CalciteDropdown,
   CalciteFab,
-  CalciteInput,
   CalciteLabel,
   CalciteNotice,
   CalciteOption,
@@ -14,54 +13,34 @@ import {
   CalciteScrim,
   CalciteSelect
 } from '@esri/calcite-components-react';
-import {
-  CalciteComboboxCustomEvent,
-  CalciteInputCustomEvent,
-  CalciteSelectCustomEvent
-} from '@esri/calcite-components';
 import _ from 'lodash';
 import { createRef, useEffect, useMemo, useState } from 'react';
 import { ArcGISLayer } from '../../types';
+import { getOperators } from '../FilterPanelExpression/utils';
 import CalciteLayerListCombobox, {
   CalciteLayerListComboboxChangeItem,
   CalciteLayerListComboboxItem
 } from '../CalciteLayerListCombobox';
+import FilterPanelExpression, {
+  FilterExpression,
+  FilterOperator
+} from '../FilterPanelExpression';
 
 interface FilterPanelProps {
   view?: __esri.MapView | __esri.SceneView;
 }
 
-type FilterPanelLayer = __esri.Sublayer | __esri.FeatureLayer;
-interface FilterPanelExpression {
-  id: string;
-  fieldRef: React.RefObject<HTMLCalciteComboboxElement | null>;
-  field: __esri.Field;
-  operator: FilterPanelOperator;
-  value: string;
-}
-
-enum FilterPanelOperator {
-  IS = 'IS',
-  IS_NOT = 'IS_NOT',
-  EQUALS = 'EQUALS',
-  NOT_EQUALS = 'NOT_EQUALS',
-  CONTAINS = 'CONTAINS'
-}
+export type FilterPanelLayer = __esri.Sublayer | __esri.FeatureLayer;
 
 enum FilterPanelLogicalOperator {
   AND = 'AND',
   OR = 'OR'
 }
 
-interface FilterPanelOperatorItem {
-  value: FilterPanelOperator;
-  text: string;
-}
-
 export const FilterPanel = (props: FilterPanelProps) => {
   const [layerItem, setLayerItem] =
     useState<CalciteLayerListComboboxItem | null>(null);
-  const [expressions, setExpressions] = useState<FilterPanelExpression[]>([]);
+  const [expressions, setExpressions] = useState<FilterExpression[]>([]);
   const [logicalOperator, setLogicalOperator] =
     useState<FilterPanelLogicalOperator>(FilterPanelLogicalOperator.AND);
   const [isRemoveScrimOpen, setIsRemoveScrimOpen] = useState<boolean>(false);
@@ -71,15 +50,6 @@ export const FilterPanel = (props: FilterPanelProps) => {
     if (!layerItem) return null;
     return layerItem.layer as FilterPanelLayer;
   }, [layerItem]);
-  const filterPanelOpearators = useMemo<FilterPanelOperatorItem[]>(() => {
-    return [
-      { value: FilterPanelOperator.IS, text: 'is' },
-      { value: FilterPanelOperator.IS_NOT, text: 'is not' },
-      { value: FilterPanelOperator.EQUALS, text: 'equals' },
-      { value: FilterPanelOperator.NOT_EQUALS, text: 'does not equal' },
-      { value: FilterPanelOperator.CONTAINS, text: 'contains' }
-    ];
-  }, []);
 
   const handleLayerChange = async (
     item: CalciteLayerListComboboxChangeItem
@@ -116,7 +86,7 @@ export const FilterPanel = (props: FilterPanelProps) => {
     if (!layer) return;
     const field = layer.fields[0];
     const operator = getOperators(field)[0];
-    const newExpression: FilterPanelExpression = {
+    const newExpression: FilterExpression = {
       id: _.uniqueId(),
       field: field,
       operator: operator,
@@ -125,7 +95,7 @@ export const FilterPanel = (props: FilterPanelProps) => {
     };
     setExpressions((c) => [...c, newExpression]);
   };
-  const removeExpression = (id: string) => {
+  const handleExpressionDelete = (id: string) => {
     setExpressions(expressions.filter((exp) => exp.id !== id));
   };
   const handleRemoveAllClick = () => {
@@ -138,53 +108,10 @@ export const FilterPanel = (props: FilterPanelProps) => {
     setExpressions([]);
     setIsRemoveScrimOpen(false);
   };
-  const getFieldIcon = (field: __esri.Field) => {
-    switch (field.type) {
-      case 'oid':
-        return 'key';
-      case 'string':
-        return 'description';
-      case 'integer':
-      case 'big-integer':
-      case 'small-integer':
-        return 'number';
-      default:
-        return 'question';
-    }
-  };
-  const getInputType = (field: __esri.Field) => {
-    switch (field.type) {
-      case 'oid':
-      case 'integer':
-      case 'big-integer':
-      case 'small-integer':
-        return 'number';
-      case 'string':
-        return 'text';
-      default:
-        return 'text';
-    }
-  };
-  const getOperators = (field: __esri.Field) => {
-    switch (field.type) {
-      case 'string':
-        return [
-          FilterPanelOperator.IS,
-          FilterPanelOperator.IS_NOT,
-          FilterPanelOperator.CONTAINS
-        ];
-      case 'oid':
-      case 'integer':
-      case 'big-integer':
-      case 'small-integer':
-        return [FilterPanelOperator.EQUALS, FilterPanelOperator.NOT_EQUALS];
-      default:
-        return [];
-    }
-  };
-  const updateField = (
+
+  const handleExpressionFieldChange = (
     event: CalciteComboboxCustomEvent<void>,
-    expression: FilterPanelExpression
+    expression: FilterExpression
   ) => {
     const fieldName = event.target.value;
     if (Array.isArray(fieldName)) return;
@@ -198,22 +125,22 @@ export const FilterPanel = (props: FilterPanelProps) => {
       )
     );
   };
-  const updateOperator = (
+  const handleExpressionOperatorChange = (
     event: CalciteSelectCustomEvent<void>,
-    expression: FilterPanelExpression
+    expression: FilterExpression
   ) => {
     const value = event.target.value;
     if (Array.isArray(value)) return;
-    const operator = value as FilterPanelOperator;
+    const operator = value as FilterOperator;
     setExpressions((c) =>
       c.map((exp) =>
         exp.id === expression.id ? { ...exp, operator, value: '' } : exp
       )
     );
   };
-  const updateValue = (
+  const handleExpressionValueChange = (
     event: CalciteInputCustomEvent<void>,
-    expression: FilterPanelExpression
+    expression: FilterExpression
   ) => {
     const value = event.target.value;
     setExpressions((c) =>
@@ -235,27 +162,27 @@ export const FilterPanel = (props: FilterPanelProps) => {
         .reduce<string[]>((whereClauses, expression) => {
           if (expression.value === '') return whereClauses;
           switch (expression.operator) {
-            case FilterPanelOperator.IS:
+            case FilterOperator.IS:
               whereClauses.push(
                 `${expression.field.name} = '${expression.value}'`
               );
               break;
-            case FilterPanelOperator.IS_NOT:
+            case FilterOperator.IS_NOT:
               whereClauses.push(
                 `${expression.field.name} != '${expression.value}'`
               );
               break;
-            case FilterPanelOperator.EQUALS:
+            case FilterOperator.EQUALS:
               whereClauses.push(
                 `${expression.field.name} = ${expression.value}`
               );
               break;
-            case FilterPanelOperator.NOT_EQUALS:
+            case FilterOperator.NOT_EQUALS:
               whereClauses.push(
                 `${expression.field.name} != ${expression.value}`
               );
               break;
-            case FilterPanelOperator.CONTAINS:
+            case FilterOperator.CONTAINS:
               whereClauses.push(
                 `${expression.field.name} LIKE '%${expression.value}%'`
               );
@@ -333,79 +260,15 @@ export const FilterPanel = (props: FilterPanelProps) => {
         </CalciteButton>
       </div>
       {expressions.map((expression) => (
-        <CalciteBlock
+        <FilterPanelExpression
           key={expression.id}
-          heading="Expression"
-          open
-        >
-          <CalciteDropdown
-            slot="control"
-            overlayPositioning="fixed"
-            placement="bottom-end"
-          >
-            <CalciteAction
-              slot="trigger"
-              icon="ellipsis"
-              text=""
-            />
-            <CalciteAction
-              text="Delete"
-              icon="trash"
-              textEnabled
-              onClick={() => removeExpression(expression.id)}
-            />
-          </CalciteDropdown>
-          <CalciteCombobox
-            label="Field"
-            selectionMode="single-persist"
-            scale="s"
-            className="mb-4"
-            clearDisabled
-            ref={expression.fieldRef}
-            value={expression.field.name}
-            onCalciteComboboxChange={(e) => updateField(e, expression)}
-          >
-            {layer?.fields.map((field) => (
-              <CalciteComboboxItem
-                key={field.name}
-                value={field.name}
-                textLabel={field.alias}
-                selected={field === expression.field}
-                icon={getFieldIcon(field)}
-              />
-            ))}
-          </CalciteCombobox>
-          <CalciteSelect
-            label="Operator"
-            scale="s"
-            className="mb-4"
-            value={expression.operator}
-            onCalciteSelectChange={(e) => updateOperator(e, expression)}
-          >
-            {filterPanelOpearators
-              .filter((operator) =>
-                getOperators(expression.field).includes(operator.value)
-              )
-              .map((operator) => (
-                <CalciteOption
-                  key={operator.value}
-                  value={operator.value}
-                >
-                  {operator.text}
-                </CalciteOption>
-              ))}
-          </CalciteSelect>
-          <CalciteInput
-            label="Value"
-            scale="s"
-            className="mb-4"
-            type={getInputType(expression.field)}
-            value={expression.value}
-            onCalciteInputInput={(e) => {
-              updateValue(e, expression);
-            }}
-          />
-        </CalciteBlock>
+          expression={expression}
+          layer={layer}
+          onFieldChange={handleExpressionFieldChange}
+          onOperatorChange={handleExpressionOperatorChange}
+          onValueChange={handleExpressionValueChange}
+          onDelete={handleExpressionDelete}
+        />
       ))}
       <CalciteFab
         slot="fab"
