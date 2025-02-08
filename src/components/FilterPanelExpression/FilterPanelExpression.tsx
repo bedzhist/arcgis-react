@@ -188,71 +188,12 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
         return 'text';
     }
   };
-
-  return (
-    <CalciteBlock
-      heading="Expression"
-      open
-    >
-      <CalciteDropdown
-        slot="control"
-        overlayPositioning="fixed"
-        placement="bottom-end"
-      >
-        <CalciteAction
-          slot="trigger"
-          icon="ellipsis"
-          text=""
-        />
-        <CalciteAction
-          text="Delete"
-          icon="trash"
-          textEnabled
-          onClick={handleDeleteClick}
-        />
-      </CalciteDropdown>
-      <CalciteCombobox
-        label="Field"
-        selectionMode="single-persist"
-        scale="s"
-        className="mb-4"
-        clearDisabled
-        ref={props.expression.fieldRef}
-        value={props.expression.field.name}
-        onCalciteComboboxChange={handleFieldChange}
-      >
-        {props.layer?.fields.map((field) => (
-          <CalciteComboboxItem
-            key={field.name}
-            value={field.name}
-            textLabel={field.alias}
-            selected={field === props.expression.field}
-            icon={getFieldIcon(field)}
-          />
-        ))}
-      </CalciteCombobox>
-      <CalciteSelect
-        label="Operator"
-        scale="s"
-        className="mb-4"
-        value={props.expression.operator}
-        onCalciteSelectChange={handleOperatorChange}
-      >
-        {filterPanelOpearators
-          .filter((operator) =>
-            getOperators(props.expression.field).includes(operator.value)
-          )
-          .map((operator) => (
-            <CalciteOption
-              key={operator.value}
-              value={operator.value}
-            >
-              {operator.text}
-            </CalciteOption>
-          ))}
-      </CalciteSelect>
-      {props.expression.operator === FilterOperator.INCLUDES ||
-      props.expression.operator === FilterOperator.EXCLUDES ? (
+  const renderValueSelector = () => {
+    if (
+      props.expression.operator === FilterOperator.INCLUDES ||
+      props.expression.operator === FilterOperator.EXCLUDES
+    ) {
+      return (
         <>
           <CalciteButton
             ref={setSelectValuesButtonRef}
@@ -328,10 +269,15 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
             ))}
           </CalciteList>
         </>
-      ) : props.expression.operator !== FilterOperator.IS_BLANK &&
-        props.expression.operator !== FilterOperator.IS_NOT_BLANK &&
-        props.expression.operator !== FilterOperator.IS_EMPTY_STRING &&
-        props.expression.operator !== FilterOperator.IS_NOT_EMPTY_STRING ? (
+      );
+    }
+    if (
+      props.expression.operator !== FilterOperator.IS_BLANK &&
+      props.expression.operator !== FilterOperator.IS_NOT_BLANK &&
+      props.expression.operator !== FilterOperator.IS_EMPTY_STRING &&
+      props.expression.operator !== FilterOperator.IS_NOT_EMPTY_STRING
+    ) {
+      return (
         <CalciteInput
           label="Value"
           scale="s"
@@ -340,7 +286,73 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
           value={props.expression.value}
           onCalciteInputInput={handleValueInput}
         />
-      ) : null}
+      );
+    }
+  };
+
+  return (
+    <CalciteBlock
+      heading="Expression"
+      open
+    >
+      <CalciteDropdown
+        slot="control"
+        overlayPositioning="fixed"
+        placement="bottom-end"
+      >
+        <CalciteAction
+          slot="trigger"
+          icon="ellipsis"
+          text=""
+        />
+        <CalciteAction
+          text="Delete"
+          icon="trash"
+          textEnabled
+          onClick={handleDeleteClick}
+        />
+      </CalciteDropdown>
+      <CalciteCombobox
+        label="Field"
+        selectionMode="single-persist"
+        scale="s"
+        className="mb-4"
+        clearDisabled
+        ref={props.expression.fieldRef}
+        value={props.expression.field.name}
+        onCalciteComboboxChange={handleFieldChange}
+      >
+        {props.layer?.fields.map((field) => (
+          <CalciteComboboxItem
+            key={field.name}
+            value={field.name}
+            textLabel={field.alias}
+            selected={field === props.expression.field}
+            icon={getFieldIcon(field)}
+          />
+        ))}
+      </CalciteCombobox>
+      <CalciteSelect
+        label="Operator"
+        scale="s"
+        className="mb-4"
+        value={props.expression.operator}
+        onCalciteSelectChange={handleOperatorChange}
+      >
+        {filterPanelOpearators
+          .filter((operator) =>
+            getOperators(props.expression.field).includes(operator.value)
+          )
+          .map((operator) => (
+            <CalciteOption
+              key={operator.value}
+              value={operator.value}
+            >
+              {operator.text}
+            </CalciteOption>
+          ))}
+      </CalciteSelect>
+      {renderValueSelector()}
     </CalciteBlock>
   );
 }
