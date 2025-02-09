@@ -1,9 +1,4 @@
-import {
-  CalciteComboboxCustomEvent,
-  CalciteInputCustomEvent,
-  CalciteSelectCustomEvent,
-  CalciteListCustomEvent
-} from '@esri/calcite-components';
+import { CalciteSelectCustomEvent } from '@esri/calcite-components';
 import {
   CalciteButton,
   CalciteFab,
@@ -17,7 +12,6 @@ import {
 import _ from 'lodash';
 import { createRef, useEffect, useMemo, useState } from 'react';
 import { ArcGISLayer } from '../../types';
-import { getOperators } from '../FilterPanelExpression/utils';
 import CalciteLayerListCombobox, {
   CalciteLayerListComboboxChangeItem,
   CalciteLayerListComboboxItem
@@ -26,6 +20,8 @@ import FilterPanelExpression, {
   FilterExpression,
   FilterOperator
 } from '../FilterPanelExpression';
+import { getOperators } from '../FilterPanelExpression/utils';
+import { toUTCDateString } from '../../utils';
 
 interface FilterPanelProps {
   view?: __esri.MapView | __esri.SceneView;
@@ -171,7 +167,7 @@ export const FilterPanel = (props: FilterPanelProps) => {
                 );
               }
               break;
-            case FilterOperator.INCLUDES:
+            case FilterOperator.STRING_INCLUDES:
               if (expression.values.length) {
                 const values = expression.values
                   .map((value) => `'${value}'`)
@@ -179,10 +175,42 @@ export const FilterPanel = (props: FilterPanelProps) => {
                 whereClauses.push(`${expression.field.name} IN (${values})`);
               }
               break;
-            case FilterOperator.EXCLUDES:
+            case FilterOperator.STRING_EXCLUDES:
               if (expression.values.length) {
                 const values = expression.values
                   .map((value) => `'${value}'`)
+                  .join(',');
+                whereClauses.push(
+                  `${expression.field.name} NOT IN (${values})`
+                );
+              }
+              break;
+            case FilterOperator.NUMBER_INCLUDES:
+              if (expression.values.length) {
+                const values = expression.values.join(',');
+                whereClauses.push(`${expression.field.name} IN (${values})`);
+              }
+              break;
+            case FilterOperator.NUMBER_EXCLUDES:
+              if (expression.values.length) {
+                const values = expression.values.join(',');
+                whereClauses.push(
+                  `${expression.field.name} NOT IN (${values})`
+                );
+              }
+              break;
+            case FilterOperator.DATE_INCLUDES:
+              if (expression.values.length) {
+                const values = expression.values
+                  .map((value) => `TIMESTAMP '${value}'`)
+                  .join(',');
+                whereClauses.push(`${expression.field.name} IN (${values})`);
+              }
+              break;
+            case FilterOperator.DATE_EXCLUDES:
+              if (expression.values.length) {
+                const values = expression.values
+                  .map((value) => `TIMESTAMP '${value}'`)
                   .join(',');
                 whereClauses.push(
                   `${expression.field.name} NOT IN (${values})`
@@ -248,9 +276,76 @@ export const FilterPanel = (props: FilterPanelProps) => {
                 expression.values.length === 2 &&
                 expression.values.every((v) => !!v)
               ) {
-                const [date, time] = expression.values;
+                const [dateString, timeString] = expression.values;
+                const date = new Date(`${dateString} ${timeString}`);
+                const utcDateString = toUTCDateString(date);
                 whereClauses.push(
-                  `${expression.field.name} = TIMESTAMP '${date} ${time}'`
+                  `${expression.field.name} = TIMESTAMP '${utcDateString}'`
+                );
+              }
+              break;
+            case FilterOperator.IS_NOT_ON:
+              if (
+                expression.values.length === 2 &&
+                expression.values.every((v) => !!v)
+              ) {
+                const [dateString, timeString] = expression.values;
+                const date = new Date(`${dateString} ${timeString}`);
+                const utcDateString = toUTCDateString(date);
+                whereClauses.push(
+                  `${expression.field.name} != TIMESTAMP '${utcDateString}'`
+                );
+              }
+              break;
+            case FilterOperator.IS_BEFORE:
+              if (
+                expression.values.length === 2 &&
+                expression.values.every((v) => !!v)
+              ) {
+                const [dateString, timeString] = expression.values;
+                const date = new Date(`${dateString} ${timeString}`);
+                const utcDateString = toUTCDateString(date);
+                whereClauses.push(
+                  `${expression.field.name} < TIMESTAMP '${utcDateString}'`
+                );
+              }
+              break;
+            case FilterOperator.IS_AFTER:
+              if (
+                expression.values.length === 2 &&
+                expression.values.every((v) => !!v)
+              ) {
+                const [dateString, timeString] = expression.values;
+                const date = new Date(`${dateString} ${timeString}`);
+                const utcDateString = toUTCDateString(date);
+                whereClauses.push(
+                  `${expression.field.name} > TIMESTAMP '${utcDateString}'`
+                );
+              }
+              break;
+            case FilterOperator.IS_BEFORE_OR_EQUAL_TO:
+              if (
+                expression.values.length === 2 &&
+                expression.values.every((v) => !!v)
+              ) {
+                const [dateString, timeString] = expression.values;
+                const date = new Date(`${dateString} ${timeString}`);
+                const utcDateString = toUTCDateString(date);
+                whereClauses.push(
+                  `${expression.field.name} <= TIMESTAMP '${utcDateString}'`
+                );
+              }
+              break;
+            case FilterOperator.IS_AFTER_OR_EQUAL_TO:
+              if (
+                expression.values.length === 2 &&
+                expression.values.every((v) => !!v)
+              ) {
+                const [dateString, timeString] = expression.values;
+                const date = new Date(`${dateString} ${timeString}`);
+                const utcDateString = toUTCDateString(date);
+                whereClauses.push(
+                  `${expression.field.name} >= TIMESTAMP '${utcDateString}'`
                 );
               }
               break;

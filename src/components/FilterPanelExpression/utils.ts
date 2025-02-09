@@ -10,8 +10,8 @@ export const getOperators = (field: __esri.Field) => {
         FilterOperator.ENDS_WITH,
         FilterOperator.CONTAINS,
         FilterOperator.DOES_NOT_CONTAIN,
-        FilterOperator.INCLUDES,
-        FilterOperator.EXCLUDES,
+        FilterOperator.STRING_INCLUDES,
+        FilterOperator.STRING_EXCLUDES,
         FilterOperator.IS_BLANK,
         FilterOperator.IS_NOT_BLANK,
         FilterOperator.IS_EMPTY_STRING,
@@ -25,8 +25,8 @@ export const getOperators = (field: __esri.Field) => {
       return [
         FilterOperator.EQUALS,
         FilterOperator.NOT_EQUALS,
-        FilterOperator.INCLUDES,
-        FilterOperator.EXCLUDES,
+        FilterOperator.NUMBER_INCLUDES,
+        FilterOperator.NUMBER_EXCLUDES,
         FilterOperator.IS_AT_LEAST,
         FilterOperator.IS_LESS_THAN,
         FilterOperator.IS_AT_MOST,
@@ -36,7 +36,16 @@ export const getOperators = (field: __esri.Field) => {
       ];
     case 'date':
       return [
-        FilterOperator.IS_ON
+        FilterOperator.IS_ON,
+        FilterOperator.IS_NOT_ON,
+        FilterOperator.IS_BEFORE,
+        FilterOperator.IS_AFTER,
+        FilterOperator.IS_BEFORE_OR_EQUAL_TO,
+        FilterOperator.IS_AFTER_OR_EQUAL_TO,
+        FilterOperator.DATE_INCLUDES,
+        FilterOperator.DATE_EXCLUDES,
+        FilterOperator.IS_BLANK,
+        FilterOperator.IS_NOT_BLANK
       ];
     default:
       return [];

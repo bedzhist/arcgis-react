@@ -1,10 +1,10 @@
 import {
   CalciteComboboxCustomEvent,
   CalciteInputCustomEvent,
-  CalciteListCustomEvent,
-  CalciteSelectCustomEvent,
   CalciteInputDatePickerCustomEvent,
-  CalciteInputTimePickerCustomEvent
+  CalciteInputTimePickerCustomEvent,
+  CalciteListCustomEvent,
+  CalciteSelectCustomEvent
 } from '@esri/calcite-components';
 import {
   CalciteAction,
@@ -27,7 +27,8 @@ import ReactDOM from 'react-dom';
 import { FilterPanelLayer } from '../FilterPanel/FilterPanel';
 import { FilterExpression, FilterOperator } from './types';
 import { getOperators } from './utils';
-import { get } from 'lodash';
+import _ from 'lodash';
+import { toUTCDateString } from '../../utils';
 
 interface FilterPanelOperatorItem {
   value: FilterOperator;
@@ -36,6 +37,7 @@ interface FilterPanelOperatorItem {
 
 interface FilterPanelExpressionValueOption {
   label: string;
+  value: string;
   count: number;
 }
 
@@ -47,13 +49,15 @@ export interface FilterPanelExpressionProps {
 }
 
 export function FilterPanelExpression(props: FilterPanelExpressionProps) {
-  const selectValuesPopoverRef = useRef<HTMLCalcitePopoverElement>(null);
+  // const selectValuesPopoverRef = useRef<HTMLCalcitePopoverElement>(null);
 
   const [selectValuesButtonRef, setSelectValuesButtonRef] =
     useState<HTMLCalciteButtonElement | null>(null);
-  const [uniqueValueOptions, setValueOptions] = useState<
+  const [uniqueValueOptions, setUniqueValueOptions] = useState<
     FilterPanelExpressionValueOption[]
   >([]);
+  const [uniqueValuePopoverOpen, setUniqueValuePopoverOpen] =
+    useState<boolean>(false);
   const [
     exceededUniqueValuesTransferLimit,
     setExceededUniqueValuesTransferLimit
@@ -65,6 +69,30 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       { value: FilterOperator.IS_NOT, text: 'is not' },
       { value: FilterOperator.EQUALS, text: 'equals' },
       { value: FilterOperator.NOT_EQUALS, text: 'does not equal' },
+      {
+        value: FilterOperator.IS_ON,
+        text: 'is on'
+      },
+      {
+        value: FilterOperator.IS_NOT_ON,
+        text: 'is not on'
+      },
+      {
+        value: FilterOperator.IS_BEFORE,
+        text: 'is before'
+      },
+      {
+        value: FilterOperator.IS_AFTER,
+        text: 'is after'
+      },
+      {
+        value: FilterOperator.IS_BEFORE_OR_EQUAL_TO,
+        text: 'is before or equal to'
+      },
+      {
+        value: FilterOperator.IS_AFTER_OR_EQUAL_TO,
+        text: 'is after or equal to'
+      },
       { value: FilterOperator.IS_AT_LEAST, text: 'is at least' },
       { value: FilterOperator.IS_LESS_THAN, text: 'is less than' },
       { value: FilterOperator.IS_AT_MOST, text: 'is at most' },
@@ -76,18 +104,18 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
         value: FilterOperator.DOES_NOT_CONTAIN,
         text: 'does not contain the text'
       },
-      { value: FilterOperator.INCLUDES, text: 'includes' },
-      { value: FilterOperator.EXCLUDES, text: 'excludes' },
+      { value: FilterOperator.STRING_INCLUDES, text: 'includes' },
+      { value: FilterOperator.STRING_EXCLUDES, text: 'excludes' },
+      { value: FilterOperator.NUMBER_INCLUDES, text: 'includes' },
+      { value: FilterOperator.NUMBER_EXCLUDES, text: 'excludes' },
+      { value: FilterOperator.DATE_INCLUDES, text: 'includes' },
+      { value: FilterOperator.DATE_EXCLUDES, text: 'excludes' },
       { value: FilterOperator.IS_BLANK, text: 'is blank' },
       { value: FilterOperator.IS_NOT_BLANK, text: 'is not blank' },
       { value: FilterOperator.IS_EMPTY_STRING, text: 'is empty string' },
       {
         value: FilterOperator.IS_NOT_EMPTY_STRING,
         text: 'is not empty string'
-      },
-      {
-        value: FilterOperator.IS_ON,
-        text: 'is on'
       }
     ];
   }, []);
@@ -132,8 +160,12 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       values: []
     };
     if (
-      operator === FilterOperator.INCLUDES ||
-      operator === FilterOperator.EXCLUDES
+      operator === FilterOperator.STRING_INCLUDES ||
+      operator === FilterOperator.STRING_EXCLUDES ||
+      operator === FilterOperator.NUMBER_INCLUDES ||
+      operator === FilterOperator.NUMBER_EXCLUDES ||
+      operator === FilterOperator.DATE_INCLUDES ||
+      operator === FilterOperator.DATE_EXCLUDES
     ) {
       const response = await layer.queryFeatures({
         where: '1=1',
@@ -151,11 +183,24 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       const features = response.features.sort(
         (a, b) => b.attributes['count'] - a.attributes['count']
       );
-      setValueOptions(
-        features.map((feature) => ({
-          label: feature.attributes[props.expression.field.name],
-          count: feature.attributes['count']
-        }))
+      setUniqueValueOptions(
+        features.map((feature) => {
+          let value = feature.attributes[props.expression.field.name];
+          let label = value;
+          if (
+            operator === FilterOperator.DATE_INCLUDES ||
+            operator === FilterOperator.DATE_EXCLUDES
+          ) {
+            const date = new Date(value);
+            label = date.toLocaleString();
+            value = toUTCDateString(date);
+          }
+          return {
+            value,
+            label,
+            count: feature.attributes['count']
+          };
+        })
       );
     }
     props.onExpressionChange(expression);
@@ -193,13 +238,11 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
     };
     props.onExpressionChange(expression);
   };
+  const handleValuesOpenClick = () => {
+    setUniqueValuePopoverOpen(true);
+  };
   const handleValuesDoneClick = () => {
-    const selectValuesPopoverEl = selectValuesPopoverRef.current;
-    if (!selectValuesPopoverEl) {
-      // TODO: Handle error
-      return;
-    }
-    selectValuesPopoverEl.open = false;
+    setUniqueValuePopoverOpen(false);
   };
   const removeValuesItem = (value: string) => {
     const values = props.expression.values.filter((v) => v !== value);
@@ -236,8 +279,12 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
   };
   const renderValueSelector = () => {
     if (
-      props.expression.operator === FilterOperator.INCLUDES ||
-      props.expression.operator === FilterOperator.EXCLUDES
+      props.expression.operator === FilterOperator.STRING_INCLUDES ||
+      props.expression.operator === FilterOperator.STRING_EXCLUDES ||
+      props.expression.operator === FilterOperator.NUMBER_INCLUDES ||
+      props.expression.operator === FilterOperator.NUMBER_EXCLUDES ||
+      props.expression.operator === FilterOperator.DATE_INCLUDES ||
+      props.expression.operator === FilterOperator.DATE_EXCLUDES
     ) {
       return (
         <>
@@ -247,56 +294,61 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
             width="full"
             scale="s"
             className="mb-4"
+            onClick={handleValuesOpenClick}
           >
             Select values
           </CalciteButton>
-          {ReactDOM.createPortal(
-            <CalcitePopover
-              ref={selectValuesPopoverRef}
-              label="Select values"
-              referenceElement={selectValuesButtonRef || ''}
-              placement="right-start"
-            >
-              <div>
-                <CalciteList
-                  selectionMode="multiple"
-                  filterEnabled
-                  onCalciteListChange={handleValuesChange}
-                  className="overflow-y-auto"
-                  style={{ maxHeight: '240px' }}
-                >
-                  {uniqueValueOptions.map((option) => (
-                    <CalciteListItem
-                      key={option.label}
-                      label={option.label}
-                      value={option.label}
-                      selected={props.expression.values.includes(option.label)}
-                    >
-                      <div
-                        slot="actions-end"
-                        className="p-5 text-2"
-                      >
-                        {option.count}
-                      </div>
-                    </CalciteListItem>
-                  ))}
-                </CalciteList>
-                {exceededUniqueValuesTransferLimit && (
-                  <div className="m-4 text-2">Too many values to display.</div>
-                )}
-                <div className="p-3">
-                  <CalciteButton
-                    width="full"
-                    scale="s"
-                    onClick={handleValuesDoneClick}
+          {uniqueValuePopoverOpen &&
+            ReactDOM.createPortal(
+              <CalcitePopover
+                label="Select values"
+                referenceElement={selectValuesButtonRef || ''}
+                placement="right-start"
+              >
+                <div>
+                  <CalciteList
+                    selectionMode="multiple"
+                    filterEnabled
+                    onCalciteListChange={handleValuesChange}
+                    className="overflow-y-auto"
+                    style={{ maxHeight: '240px' }}
                   >
-                    Done
-                  </CalciteButton>
+                    {uniqueValueOptions.map((option) => (
+                      <CalciteListItem
+                        key={option.value}
+                        label={option.label}
+                        value={option.value}
+                        selected={props.expression.values.includes(
+                          option.value
+                        )}
+                      >
+                        <div
+                          slot="actions-end"
+                          className="p-5 text-2"
+                        >
+                          {option.count}
+                        </div>
+                      </CalciteListItem>
+                    ))}
+                  </CalciteList>
+                  {exceededUniqueValuesTransferLimit && (
+                    <div className="m-4 text-2">
+                      Too many values to display.
+                    </div>
+                  )}
+                  <div className="p-3">
+                    <CalciteButton
+                      width="full"
+                      scale="s"
+                      onClick={handleValuesDoneClick}
+                    >
+                      Done
+                    </CalciteButton>
+                  </div>
                 </div>
-              </div>
-            </CalcitePopover>,
-            document.body
-          )}
+              </CalcitePopover>,
+              document.body
+            )}
           <CalciteList selectionMode="none">
             {props.expression.values.map((value) => (
               <CalciteListItem
@@ -317,7 +369,14 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
         </>
       );
     }
-    if (props.expression.operator === FilterOperator.IS_ON) {
+    if (
+      props.expression.operator === FilterOperator.IS_ON ||
+      props.expression.operator === FilterOperator.IS_NOT_ON ||
+      props.expression.operator === FilterOperator.IS_BEFORE ||
+      props.expression.operator === FilterOperator.IS_AFTER ||
+      props.expression.operator === FilterOperator.IS_BEFORE_OR_EQUAL_TO ||
+      props.expression.operator === FilterOperator.IS_AFTER_OR_EQUAL_TO
+    ) {
       return (
         <div className="d-flex mb-4">
           <CalciteInputDatePicker
