@@ -177,7 +177,6 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       // TODO: Handle error
       return;
     }
-    console.dir(event.target);
     const expression = {
       ...props.expression,
       values: [value, props.expression.values[1] || '']
@@ -188,7 +187,6 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
     event: CalciteInputTimePickerCustomEvent<void>
   ) => {
     const value = event.target.value;
-    console.dir(event.target);
     const expression = {
       ...props.expression,
       values: [props.expression.values[0] || '', value]
