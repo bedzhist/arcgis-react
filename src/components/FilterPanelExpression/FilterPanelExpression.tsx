@@ -1,8 +1,10 @@
 import {
   CalciteComboboxCustomEvent,
   CalciteInputCustomEvent,
+  CalciteListCustomEvent,
   CalciteSelectCustomEvent,
-  CalciteListCustomEvent
+  CalciteInputDatePickerCustomEvent,
+  CalciteInputTimePickerCustomEvent
 } from '@esri/calcite-components';
 import {
   CalciteAction,
@@ -12,6 +14,8 @@ import {
   CalciteComboboxItem,
   CalciteDropdown,
   CalciteInput,
+  CalciteInputDatePicker,
+  CalciteInputTimePicker,
   CalciteList,
   CalciteListItem,
   CalciteOption,
@@ -19,10 +23,11 @@ import {
   CalciteSelect
 } from '@esri/calcite-components-react';
 import { useMemo, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import { FilterPanelLayer } from '../FilterPanel/FilterPanel';
 import { FilterExpression, FilterOperator } from './types';
 import { getOperators } from './utils';
-import ReactDOM from 'react-dom';
+import { get } from 'lodash';
 
 interface FilterPanelOperatorItem {
   value: FilterOperator;
@@ -38,23 +43,7 @@ export interface FilterPanelExpressionProps {
   expression: FilterExpression;
   layer: FilterPanelLayer | null;
   onDelete: (id: string) => void;
-  onFieldChange: (
-    event: CalciteComboboxCustomEvent<void>,
-    expression: FilterExpression
-  ) => void;
-  onOperatorChange: (
-    event: CalciteSelectCustomEvent<void>,
-    expression: FilterExpression
-  ) => void;
-  onValueChange: (
-    event: CalciteInputCustomEvent<void>,
-    expression: FilterExpression
-  ) => void;
-  onValuesChange: (
-    event: CalciteListCustomEvent<void>,
-    expression: FilterExpression
-  ) => void;
-  onValuesRemove: (value: string, expression: FilterExpression) => void;
+  onExpressionChange: (expression: FilterExpression) => void;
 }
 
 export function FilterPanelExpression(props: FilterPanelExpressionProps) {
@@ -95,6 +84,10 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       {
         value: FilterOperator.IS_NOT_EMPTY_STRING,
         text: 'is not empty string'
+      },
+      {
+        value: FilterOperator.IS_ON,
+        text: 'is on'
       }
     ];
   }, []);
@@ -103,7 +96,20 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
     props.onDelete(props.expression.id);
   };
   const handleFieldChange = (event: CalciteComboboxCustomEvent<void>) => {
-    props.onFieldChange(event, props.expression);
+    const fieldName = event.target.value;
+    if (Array.isArray(fieldName)) return;
+    const field = props.layer?.fields.find((f) => f.name === fieldName);
+    if (!field) {
+      // TODO: Handle error
+      return;
+    }
+    props.onExpressionChange({
+      ...props.expression,
+      field,
+      operator: getOperators(field)[0],
+      value: '',
+      values: []
+    });
   };
   const handleOperatorChange = async (
     event: CalciteSelectCustomEvent<void>
@@ -113,11 +119,21 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       // TODO: Handle error
       return;
     }
-    props.onOperatorChange(event, props.expression);
-    const value = event.target.value as FilterOperator;
+    const value = event.target.value;
+    if (Array.isArray(value)) {
+      // TODO: Handle error
+      return;
+    }
+    const operator = value as FilterOperator;
+    const expression: FilterExpression = {
+      ...props.expression,
+      operator,
+      value: '',
+      values: []
+    };
     if (
-      value === FilterOperator.INCLUDES ||
-      value === FilterOperator.EXCLUDES
+      operator === FilterOperator.INCLUDES ||
+      operator === FilterOperator.EXCLUDES
     ) {
       const response = await layer.queryFeatures({
         where: '1=1',
@@ -142,12 +158,42 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
         }))
       );
     }
+    props.onExpressionChange(expression);
   };
   const handleValueInput = (event: CalciteInputCustomEvent<void>) => {
-    props.onValueChange(event, props.expression);
+    const value = event.target.value;
+    const expression = { ...props.expression, value };
+    props.onExpressionChange(expression);
   };
   const handleValuesChange = (event: CalciteListCustomEvent<void>) => {
-    props.onValuesChange(event, props.expression);
+    const values = event.target.selectedItems.map((item) => item.value);
+    props.onExpressionChange({ ...props.expression, values });
+  };
+  const handleDateValueChange = (
+    event: CalciteInputDatePickerCustomEvent<void>
+  ) => {
+    let value = event.target.value;
+    if (Array.isArray(value)) {
+      // TODO: Handle error
+      return;
+    }
+    console.dir(event.target);
+    const expression = {
+      ...props.expression,
+      values: [value, props.expression.values[1] || '']
+    };
+    props.onExpressionChange(expression);
+  };
+  const handleTimeValueChange = (
+    event: CalciteInputTimePickerCustomEvent<void>
+  ) => {
+    const value = event.target.value;
+    console.dir(event.target);
+    const expression = {
+      ...props.expression,
+      values: [props.expression.values[0] || '', value]
+    };
+    props.onExpressionChange(expression);
   };
   const handleValuesDoneClick = () => {
     const selectValuesPopoverEl = selectValuesPopoverRef.current;
@@ -157,9 +203,9 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
     }
     selectValuesPopoverEl.open = false;
   };
-
   const removeValuesItem = (value: string) => {
-    props.onValuesRemove(value, props.expression);
+    const values = props.expression.values.filter((v) => v !== value);
+    props.onExpressionChange({ ...props.expression, values });
   };
   const getFieldIcon = (field: __esri.Field) => {
     switch (field.type) {
@@ -171,6 +217,8 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       case 'big-integer':
       case 'small-integer':
         return 'number';
+      case 'date':
+        return 'calendar';
       default:
         return 'question';
     }
@@ -269,6 +317,25 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
             ))}
           </CalciteList>
         </>
+      );
+    }
+    if (props.expression.operator === FilterOperator.IS_ON) {
+      return (
+        <div className="d-flex mb-4">
+          <CalciteInputDatePicker
+            scale="s"
+            value={props.expression.values[0]}
+            className="flex-1"
+            onCalciteInputDatePickerChange={handleDateValueChange}
+          />
+          <CalciteInputTimePicker
+            scale="s"
+            value={props.expression.values[1]}
+            step={1}
+            className="flex-1"
+            onCalciteInputTimePickerChange={handleTimeValueChange}
+          />
+        </div>
       );
     }
     if (

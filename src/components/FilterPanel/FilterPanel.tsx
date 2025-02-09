@@ -110,64 +110,9 @@ export const FilterPanel = (props: FilterPanelProps) => {
     setExpressions([]);
     setIsRemoveScrimOpen(false);
   };
-
-  const handleExpressionFieldChange = (
-    event: CalciteComboboxCustomEvent<void>,
-    expression: FilterExpression
-  ) => {
-    const fieldName = event.target.value;
-    if (Array.isArray(fieldName)) return;
-    const field = layer?.fields.find((f) => f.name === fieldName);
-    if (!field) return;
+  const handleExpressionChange = (expression: FilterExpression) => {
     setExpressions((c) =>
-      c.map((exp) =>
-        exp.id === expression.id
-          ? { ...exp, field, operator: getOperators(field)[0], value: '' }
-          : exp
-      )
-    );
-  };
-  const handleExpressionOperatorChange = (
-    event: CalciteSelectCustomEvent<void>,
-    expression: FilterExpression
-  ) => {
-    const value = event.target.value;
-    if (Array.isArray(value)) return;
-    const operator = value as FilterOperator;
-    setExpressions((c) =>
-      c.map((exp) =>
-        exp.id === expression.id ? { ...exp, operator, value: '' } : exp
-      )
-    );
-  };
-  const handleExpressionValueChange = (
-    event: CalciteInputCustomEvent<void>,
-    expression: FilterExpression
-  ) => {
-    const value = event.target.value;
-    setExpressions((c) =>
-      c.map((exp) => (exp.id === expression.id ? { ...exp, value } : exp))
-    );
-  };
-  const handleExpressionValuesChange = (
-    event: CalciteListCustomEvent<void>,
-    expression: FilterExpression
-  ) => {
-    const values = event.target.selectedItems.map((item) => item.value);
-    setExpressions((c) =>
-      c.map((exp) => (exp.id === expression.id ? { ...exp, values } : exp))
-    );
-  };
-  const handleExpressionValuesRemove = (
-    value: string,
-    expression: FilterExpression
-  ) => {
-    setExpressions((c) =>
-      c.map((exp) =>
-        exp.id === expression.id
-          ? { ...exp, values: exp.values.filter((v) => v !== value) }
-          : exp
-      )
+      c.map((exp) => (exp.id === expression.id ? expression : exp))
     );
   };
   const handleNoticeClose = () => {
@@ -298,6 +243,17 @@ export const FilterPanel = (props: FilterPanelProps) => {
                 );
               }
               break;
+            case FilterOperator.IS_ON:
+              if (
+                expression.values.length === 2 &&
+                expression.values.every((v) => !!v)
+              ) {
+                const [date, time] = expression.values;
+                whereClauses.push(
+                  `${expression.field.name} = TIMESTAMP '${date} ${time}'`
+                );
+              }
+              break;
             default: {
               console.error('Unknown operator:', expression.operator);
               return whereClauses;
@@ -375,11 +331,7 @@ export const FilterPanel = (props: FilterPanelProps) => {
           key={expression.id}
           expression={expression}
           layer={layer}
-          onFieldChange={handleExpressionFieldChange}
-          onOperatorChange={handleExpressionOperatorChange}
-          onValueChange={handleExpressionValueChange}
-          onValuesChange={handleExpressionValuesChange}
-          onValuesRemove={handleExpressionValuesRemove}
+          onExpressionChange={handleExpressionChange}
           onDelete={handleExpressionDelete}
         />
       ))}

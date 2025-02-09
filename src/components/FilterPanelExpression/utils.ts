@@ -34,6 +34,10 @@ export const getOperators = (field: __esri.Field) => {
         FilterOperator.IS_BLANK,
         FilterOperator.IS_NOT_BLANK
       ];
+    case 'date':
+      return [
+        FilterOperator.IS_ON
+      ];
     default:
       return [];
   }
