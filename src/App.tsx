@@ -1,118 +1,120 @@
-import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
-import Expand from '@arcgis/core/widgets/Expand';
-import LayerList from '@arcgis/core/widgets/LayerList';
 import {
-  CalciteAlert,
+  CalciteButton,
   CalciteShell,
-  CalciteShellPanel
+  CalciteShellPanel,
+  CalciteTextArea
 } from '@esri/calcite-components-react';
-import { useEffect, useRef, useState } from 'react';
-import { FilterPanel, Toggle3d, Toggle3dWidget } from './components';
-import AlertContext from './contexts/AlertContext';
-import { useAlert } from './hooks';
-import { US_VOTING_PRECINCTS_2008_ELECTION_LAYER_ID } from './utils';
+import { useActionState, useEffect, useRef, useState } from 'react';
+import { CalciteTextAreaCustomEvent } from '@esri/calcite-components';
+import lodash from 'lodash';
+
+interface ChatMessage {
+  id: string;
+  text: string;
+  role: 'user' | 'system';
+}
 
 export function App() {
   const viewRef = useRef<HTMLDivElement>(null);
-  const toggle3dRef = useRef<HTMLCalciteSegmentedControlElement>(null);
 
-  const [toggle3dWidgets, setToggle3dWidgets] = useState<Toggle3dWidget[]>([]);
+  const [, chatFormAction, isChatFormLoading] = useActionState<null, FormData>(
+    async (_, formData) => {
+      const query = formData.get('query');
+      if (typeof query !== 'string') {
+        return null;
+      }
+      const message: ChatMessage = {
+        id: lodash.uniqueId(),
+        text: query,
+        role: 'user'
+      };
+      setMessages((prevMessages) => [...prevMessages, message]);
+      return null;
+    },
+    null
+  );
 
-  const [alert, alertMethods] = useAlert();
+  const [query, setQuery] = useState<string>('');
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
-  const [view, setView] = useState<__esri.MapView | __esri.SceneView>();
+  const handleQueryInput = (event: CalciteTextAreaCustomEvent<void>) => {
+    const value = event.target.value;
+    setQuery(value);
+  };
 
   useEffect(() => {
-    const viewEl = viewRef.current;
-    if (!viewEl) {
+    const vielEl = viewRef.current;
+    if (!vielEl) {
       return;
     }
-    const layer = new FeatureLayer({
-      url: 'https://services.arcgis.com/V6ZHFr6zdgNZuVG0/arcgis/rest/services/Landscape_Trees/FeatureServer/0'
-    });
-    const layer2 = new FeatureLayer({
-      portalItem: { id: US_VOTING_PRECINCTS_2008_ELECTION_LAYER_ID }
-    });
     const map = new Map({
-      basemap: 'dark-gray-vector',
-      layers: [layer, layer2]
+      basemap: 'dark-gray-vector'
     });
     const mapView = new MapView({
-      map,
-      container: viewEl
+      container: vielEl,
+      map
     });
-    setView(mapView);
-    const layerListWidget = new LayerList({
-      view: mapView
-    });
-    const layerListExpand = new Expand({
-      view: mapView,
-      content: layerListWidget
-    });
-    mapView.ui.add(layerListExpand, 'top-right');
-    const toggle3dEl = toggle3dRef.current;
-    if (toggle3dEl) {
-      mapView.ui.add(toggle3dEl, 'bottom-right');
-    }
-    setToggle3dWidgets([layerListWidget, layerListExpand]);
     return () => {
       mapView.destroy();
     };
   }, []);
 
   return (
-    <AlertContext value={alertMethods}>
-      <CalciteShell>
-        <CalciteShellPanel
-          slot="panel-start"
-          position="start"
-          layout="vertical"
-          resizable
-          style={{
-            '--calcite-shell-panel-width': '400px',
-            '--calcite-shell-panel-max-width': '600px'
-          }}
-        >
-          {/* <div className="p-3">
-            <CalciteButton appearance="transparent">
-              Select values
-            </CalciteButton>
-          </div> */}
-          <FilterPanel view={view} />
-        </CalciteShellPanel>
-        <div
-          ref={viewRef}
-          className="h-100"
-        >
-          <Toggle3d
-            ref={toggle3dRef}
-            view={view}
-            widgets={toggle3dWidgets}
-            onViewToggle={setView}
-          />
-        </div>
-        {alert && (
-          <CalciteAlert
-            slot="alerts"
-            key={alert.id}
-            icon={alert.icon}
-            kind={alert.kind}
-            open
-            label={alert.title}
-            onCalciteAlertClose={() => alertMethods.setAlert(null)}
-            autoClose={alert.autoClose}
-            style={{
-              '--calcite-z-index-toast': 1000
-            }}
+    <CalciteShell>
+      <CalciteShellPanel
+        slot="panel-start"
+        position="start"
+        layout="vertical"
+        resizable
+      >
+        <div className="d-flex flex-column h-100 p-5">
+          <div className="h-100">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className="d-flex justify-end w-100 mb-5"
+              >
+                <span className="py-3 px-5 border-1 rounded-round bg-2">
+                  {message.text}
+                </span>
+              </div>
+            ))}
+          </div>
+          <form
+            className="d-flex items-center gap-3"
+            action={chatFormAction}
           >
-            <div slot="title">{alert.title}</div>
-            <div slot="message">{alert.message}</div>
-          </CalciteAlert>
-        )}
-      </CalciteShell>
-    </AlertContext>
+            <CalciteTextArea
+              name="query"
+              resize="none"
+              placeholder="Enter a query"
+              style={{ height: '52px' }}
+              value={query}
+              onCalciteTextAreaInput={handleQueryInput}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter') {
+                  event.preventDefault();
+                }
+              }}
+            />
+            <CalciteButton
+              type="submit"
+              iconStart="send"
+              scale="l"
+              round
+              appearance="transparent"
+              disabled={!query || isChatFormLoading}
+            />
+          </form>
+        </div>
+      </CalciteShellPanel>
+      <div
+        ref={viewRef}
+        className="h-100"
+      />
+    </CalciteShell>
   );
 }
 

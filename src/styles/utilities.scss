@@ -238,10 +238,10 @@ $borderStyles: (
 }
 
 $borderRadius: (
-  default: var(--calcite-border-radius),
-  sharp: var(--calcite-border-radius-sharp),
-  round: var(--calcite-border-radius-round),
-  pill: var(--calcite-border-radius-pill),
+  default: var(--calcite-corner-radius),
+  sharp: var(--calcite-corner-radius-sharp),
+  round: var(--calcite-corner-radius-round),
+  pill: var(--calcite-corner-radius-pill),
 );
 
 @each $name, $value in $borderRadius {

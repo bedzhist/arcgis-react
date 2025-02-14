@@ -307,7 +307,7 @@ export function AddData(props: AddDataProps) {
   const inputFileRef = useRef<HTMLInputElement>(null);
 
   const livingAtlasGroupId = useValue<string>('');
-  const resultsSearchTimeout = useValue<number | null>(null);
+  const resultsSearchTimeout = useValue<NodeJS.Timeout | null>(null);
 
   const [, fileFormAction, isFileFormLoading] = useActionState<null, FormData>(
     async () => {
