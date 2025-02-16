@@ -10,8 +10,9 @@ import {
   CalciteSelect
 } from '@esri/calcite-components-react';
 import _ from 'lodash';
-import { createRef, useEffect, useMemo, useState } from 'react';
+import { createRef, useMemo, useState } from 'react';
 import { ArcGISLayer } from '../../types';
+import { toUTCDateString } from '../../utils';
 import CalciteLayerListCombobox, {
   CalciteLayerListComboboxChangeItem,
   CalciteLayerListComboboxItem
@@ -21,7 +22,6 @@ import FilterPanelExpression, {
   FilterOperator
 } from '../FilterPanelExpression';
 import { getOperators } from '../FilterPanelExpression/utils';
-import { toUTCDateString } from '../../utils';
 
 interface FilterPanelProps {
   view?: __esri.MapView | __esri.SceneView;
@@ -48,6 +48,246 @@ export function FilterPanel(props: FilterPanelProps) {
     return layerItem.layer as FilterPanelLayer;
   }, [layerItem]);
 
+  const applyExpressions = (
+    newExpressions: FilterExpression[],
+    newLogicalOperator = logicalOperator
+  ) => {
+    if (!layer) return;
+    if (!newExpressions.length) {
+      layer.definitionExpression = '';
+      return;
+    }
+    const where = newExpressions
+      .reduce<string[]>((whereClauses, expression) => {
+        switch (expression.operator) {
+          case FilterOperator.IS:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} = '${expression.value}'`
+              );
+            }
+            break;
+          case FilterOperator.IS_NOT:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} != '${expression.value}'`
+              );
+            }
+            break;
+          case FilterOperator.EQUALS:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} = ${expression.value}`
+              );
+            }
+            break;
+          case FilterOperator.NOT_EQUALS:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} != ${expression.value}`
+              );
+            }
+            break;
+          case FilterOperator.CONTAINS:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} LIKE '%${expression.value}%'`
+              );
+            }
+            break;
+          case FilterOperator.DOES_NOT_CONTAIN:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} NOT LIKE '%${expression.value}%'`
+              );
+            }
+            break;
+          case FilterOperator.STRING_INCLUDES:
+            if (expression.values.length) {
+              const values = expression.values
+                .map((value) => `'${value}'`)
+                .join(',');
+              whereClauses.push(`${expression.field.name} IN (${values})`);
+            }
+            break;
+          case FilterOperator.STRING_EXCLUDES:
+            if (expression.values.length) {
+              const values = expression.values
+                .map((value) => `'${value}'`)
+                .join(',');
+              whereClauses.push(`${expression.field.name} NOT IN (${values})`);
+            }
+            break;
+          case FilterOperator.NUMBER_INCLUDES:
+            if (expression.values.length) {
+              const values = expression.values.join(',');
+              whereClauses.push(`${expression.field.name} IN (${values})`);
+            }
+            break;
+          case FilterOperator.NUMBER_EXCLUDES:
+            if (expression.values.length) {
+              const values = expression.values.join(',');
+              whereClauses.push(`${expression.field.name} NOT IN (${values})`);
+            }
+            break;
+          case FilterOperator.DATE_INCLUDES:
+            if (expression.values.length) {
+              const values = expression.values
+                .map((value) => `TIMESTAMP '${value}'`)
+                .join(',');
+              whereClauses.push(`${expression.field.name} IN (${values})`);
+            }
+            break;
+          case FilterOperator.DATE_EXCLUDES:
+            if (expression.values.length) {
+              const values = expression.values
+                .map((value) => `TIMESTAMP '${value}'`)
+                .join(',');
+              whereClauses.push(`${expression.field.name} NOT IN (${values})`);
+            }
+            break;
+          case FilterOperator.STARTS_WITH:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} LIKE '${expression.value}%'`
+              );
+            }
+            break;
+          case FilterOperator.ENDS_WITH:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} LIKE '%${expression.value}'`
+              );
+            }
+            break;
+          case FilterOperator.IS_BLANK:
+            whereClauses.push(`${expression.field.name} IS NULL`);
+            break;
+          case FilterOperator.IS_NOT_BLANK:
+            whereClauses.push(`${expression.field.name} IS NOT NULL`);
+            break;
+          case FilterOperator.IS_EMPTY_STRING:
+            whereClauses.push(`${expression.field.name} = ''`);
+            break;
+          case FilterOperator.IS_NOT_EMPTY_STRING:
+            whereClauses.push(`${expression.field.name} != ''`);
+            break;
+          case FilterOperator.IS_AT_LEAST:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} >= ${expression.value}`
+              );
+            }
+            break;
+          case FilterOperator.IS_LESS_THAN:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} < ${expression.value}`
+              );
+            }
+            break;
+          case FilterOperator.IS_AT_MOST:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} <= ${expression.value}`
+              );
+            }
+            break;
+          case FilterOperator.IS_GREATER_THAN:
+            if (expression.value) {
+              whereClauses.push(
+                `${expression.field.name} > ${expression.value}`
+              );
+            }
+            break;
+          case FilterOperator.IS_ON:
+            if (
+              expression.values.length === 2 &&
+              expression.values.every((v) => !!v)
+            ) {
+              const [dateString, timeString] = expression.values;
+              const date = new Date(`${dateString} ${timeString}`);
+              const utcDateString = toUTCDateString(date);
+              whereClauses.push(
+                `${expression.field.name} = TIMESTAMP '${utcDateString}'`
+              );
+            }
+            break;
+          case FilterOperator.IS_NOT_ON:
+            if (
+              expression.values.length === 2 &&
+              expression.values.every((v) => !!v)
+            ) {
+              const [dateString, timeString] = expression.values;
+              const date = new Date(`${dateString} ${timeString}`);
+              const utcDateString = toUTCDateString(date);
+              whereClauses.push(
+                `${expression.field.name} != TIMESTAMP '${utcDateString}'`
+              );
+            }
+            break;
+          case FilterOperator.IS_BEFORE:
+            if (
+              expression.values.length === 2 &&
+              expression.values.every((v) => !!v)
+            ) {
+              const [dateString, timeString] = expression.values;
+              const date = new Date(`${dateString} ${timeString}`);
+              const utcDateString = toUTCDateString(date);
+              whereClauses.push(
+                `${expression.field.name} < TIMESTAMP '${utcDateString}'`
+              );
+            }
+            break;
+          case FilterOperator.IS_AFTER:
+            if (
+              expression.values.length === 2 &&
+              expression.values.every((v) => !!v)
+            ) {
+              const [dateString, timeString] = expression.values;
+              const date = new Date(`${dateString} ${timeString}`);
+              const utcDateString = toUTCDateString(date);
+              whereClauses.push(
+                `${expression.field.name} > TIMESTAMP '${utcDateString}'`
+              );
+            }
+            break;
+          case FilterOperator.IS_BEFORE_OR_EQUAL_TO:
+            if (
+              expression.values.length === 2 &&
+              expression.values.every((v) => !!v)
+            ) {
+              const [dateString, timeString] = expression.values;
+              const date = new Date(`${dateString} ${timeString}`);
+              const utcDateString = toUTCDateString(date);
+              whereClauses.push(
+                `${expression.field.name} <= TIMESTAMP '${utcDateString}'`
+              );
+            }
+            break;
+          case FilterOperator.IS_AFTER_OR_EQUAL_TO:
+            if (
+              expression.values.length === 2 &&
+              expression.values.every((v) => !!v)
+            ) {
+              const [dateString, timeString] = expression.values;
+              const date = new Date(`${dateString} ${timeString}`);
+              const utcDateString = toUTCDateString(date);
+              whereClauses.push(
+                `${expression.field.name} >= TIMESTAMP '${utcDateString}'`
+              );
+            }
+            break;
+          default: {
+            console.error('Unknown operator:', expression.operator);
+            return whereClauses;
+          }
+        }
+        return whereClauses;
+      }, [])
+      .join(` ${newLogicalOperator} `);
+    layer.definitionExpression = where;
+  };
   const handleLayerChange = async (
     item: CalciteLayerListComboboxChangeItem
   ) => {
@@ -69,15 +309,18 @@ export function FilterPanel(props: FilterPanelProps) {
       layer.definitionExpression = '';
     }
     setLayerItem(item);
-    setExpressions([]);
+    const newExpressions: FilterExpression[] = [];
+    setExpressions(newExpressions);
+    applyExpressions(newExpressions);
   };
   const handleLogicalOperatorChange = (
     event: CalciteSelectCustomEvent<void>
   ) => {
     const value = event.target.value;
     if (Array.isArray(value)) return;
-    const operator = value as FilterPanelLogicalOperator;
-    setLogicalOperator(operator);
+    const newLogicalOperator = value as FilterPanelLogicalOperator;
+    setLogicalOperator(newLogicalOperator);
+    applyExpressions(expressions, newLogicalOperator);
   };
   const handleAddExpressionClick = () => {
     if (!layer) return;
@@ -91,10 +334,14 @@ export function FilterPanel(props: FilterPanelProps) {
       values: [],
       fieldRef: createRef<HTMLCalciteComboboxElement | null>()
     };
-    setExpressions((c) => [...c, newExpression]);
+    const newExpressions = [...expressions, newExpression];
+    setExpressions(newExpressions);
+    applyExpressions(newExpressions);
   };
   const handleExpressionDelete = (id: string) => {
-    setExpressions(expressions.filter((exp) => exp.id !== id));
+    const newExpressions = expressions.filter((exp) => exp.id !== id);
+    setExpressions(newExpressions);
+    applyExpressions(newExpressions);
   };
   const handleRemoveAllClick = () => {
     setIsRemoveScrimOpen(true);
@@ -103,264 +350,21 @@ export function FilterPanel(props: FilterPanelProps) {
     setIsRemoveScrimOpen(false);
   };
   const handleRemoveAllConfirmClick = () => {
-    setExpressions([]);
+    const newExpressions: FilterExpression[] = [];
+    setExpressions(newExpressions);
+    applyExpressions(newExpressions);
     setIsRemoveScrimOpen(false);
   };
   const handleExpressionChange = (expression: FilterExpression) => {
-    setExpressions((c) =>
-      c.map((exp) => (exp.id === expression.id ? expression : exp))
+    const newExpressions = expressions.map((exp) =>
+      exp.id === expression.id ? expression : exp
     );
+    setExpressions(newExpressions);
+    applyExpressions(newExpressions);
   };
   const handleNoticeClose = () => {
     setIsNoticeOpen(false);
   };
-
-  useEffect(() => {
-    const applyExpressions = () => {
-      if (!layer) return;
-      if (!expressions.length) {
-        layer.definitionExpression = '';
-        return;
-      }
-      const where = expressions
-        .reduce<string[]>((whereClauses, expression) => {
-          switch (expression.operator) {
-            case FilterOperator.IS:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} = '${expression.value}'`
-                );
-              }
-              break;
-            case FilterOperator.IS_NOT:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} != '${expression.value}'`
-                );
-              }
-              break;
-            case FilterOperator.EQUALS:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} = ${expression.value}`
-                );
-              }
-              break;
-            case FilterOperator.NOT_EQUALS:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} != ${expression.value}`
-                );
-              }
-              break;
-            case FilterOperator.CONTAINS:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} LIKE '%${expression.value}%'`
-                );
-              }
-              break;
-            case FilterOperator.DOES_NOT_CONTAIN:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} NOT LIKE '%${expression.value}%'`
-                );
-              }
-              break;
-            case FilterOperator.STRING_INCLUDES:
-              if (expression.values.length) {
-                const values = expression.values
-                  .map((value) => `'${value}'`)
-                  .join(',');
-                whereClauses.push(`${expression.field.name} IN (${values})`);
-              }
-              break;
-            case FilterOperator.STRING_EXCLUDES:
-              if (expression.values.length) {
-                const values = expression.values
-                  .map((value) => `'${value}'`)
-                  .join(',');
-                whereClauses.push(
-                  `${expression.field.name} NOT IN (${values})`
-                );
-              }
-              break;
-            case FilterOperator.NUMBER_INCLUDES:
-              if (expression.values.length) {
-                const values = expression.values.join(',');
-                whereClauses.push(`${expression.field.name} IN (${values})`);
-              }
-              break;
-            case FilterOperator.NUMBER_EXCLUDES:
-              if (expression.values.length) {
-                const values = expression.values.join(',');
-                whereClauses.push(
-                  `${expression.field.name} NOT IN (${values})`
-                );
-              }
-              break;
-            case FilterOperator.DATE_INCLUDES:
-              if (expression.values.length) {
-                const values = expression.values
-                  .map((value) => `TIMESTAMP '${value}'`)
-                  .join(',');
-                whereClauses.push(`${expression.field.name} IN (${values})`);
-              }
-              break;
-            case FilterOperator.DATE_EXCLUDES:
-              if (expression.values.length) {
-                const values = expression.values
-                  .map((value) => `TIMESTAMP '${value}'`)
-                  .join(',');
-                whereClauses.push(
-                  `${expression.field.name} NOT IN (${values})`
-                );
-              }
-              break;
-            case FilterOperator.STARTS_WITH:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} LIKE '${expression.value}%'`
-                );
-              }
-              break;
-            case FilterOperator.ENDS_WITH:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} LIKE '%${expression.value}'`
-                );
-              }
-              break;
-            case FilterOperator.IS_BLANK:
-              whereClauses.push(`${expression.field.name} IS NULL`);
-              break;
-            case FilterOperator.IS_NOT_BLANK:
-              whereClauses.push(`${expression.field.name} IS NOT NULL`);
-              break;
-            case FilterOperator.IS_EMPTY_STRING:
-              whereClauses.push(`${expression.field.name} = ''`);
-              break;
-            case FilterOperator.IS_NOT_EMPTY_STRING:
-              whereClauses.push(`${expression.field.name} != ''`);
-              break;
-            case FilterOperator.IS_AT_LEAST:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} >= ${expression.value}`
-                );
-              }
-              break;
-            case FilterOperator.IS_LESS_THAN:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} < ${expression.value}`
-                );
-              }
-              break;
-            case FilterOperator.IS_AT_MOST:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} <= ${expression.value}`
-                );
-              }
-              break;
-            case FilterOperator.IS_GREATER_THAN:
-              if (expression.value) {
-                whereClauses.push(
-                  `${expression.field.name} > ${expression.value}`
-                );
-              }
-              break;
-            case FilterOperator.IS_ON:
-              if (
-                expression.values.length === 2 &&
-                expression.values.every((v) => !!v)
-              ) {
-                const [dateString, timeString] = expression.values;
-                const date = new Date(`${dateString} ${timeString}`);
-                const utcDateString = toUTCDateString(date);
-                whereClauses.push(
-                  `${expression.field.name} = TIMESTAMP '${utcDateString}'`
-                );
-              }
-              break;
-            case FilterOperator.IS_NOT_ON:
-              if (
-                expression.values.length === 2 &&
-                expression.values.every((v) => !!v)
-              ) {
-                const [dateString, timeString] = expression.values;
-                const date = new Date(`${dateString} ${timeString}`);
-                const utcDateString = toUTCDateString(date);
-                whereClauses.push(
-                  `${expression.field.name} != TIMESTAMP '${utcDateString}'`
-                );
-              }
-              break;
-            case FilterOperator.IS_BEFORE:
-              if (
-                expression.values.length === 2 &&
-                expression.values.every((v) => !!v)
-              ) {
-                const [dateString, timeString] = expression.values;
-                const date = new Date(`${dateString} ${timeString}`);
-                const utcDateString = toUTCDateString(date);
-                whereClauses.push(
-                  `${expression.field.name} < TIMESTAMP '${utcDateString}'`
-                );
-              }
-              break;
-            case FilterOperator.IS_AFTER:
-              if (
-                expression.values.length === 2 &&
-                expression.values.every((v) => !!v)
-              ) {
-                const [dateString, timeString] = expression.values;
-                const date = new Date(`${dateString} ${timeString}`);
-                const utcDateString = toUTCDateString(date);
-                whereClauses.push(
-                  `${expression.field.name} > TIMESTAMP '${utcDateString}'`
-                );
-              }
-              break;
-            case FilterOperator.IS_BEFORE_OR_EQUAL_TO:
-              if (
-                expression.values.length === 2 &&
-                expression.values.every((v) => !!v)
-              ) {
-                const [dateString, timeString] = expression.values;
-                const date = new Date(`${dateString} ${timeString}`);
-                const utcDateString = toUTCDateString(date);
-                whereClauses.push(
-                  `${expression.field.name} <= TIMESTAMP '${utcDateString}'`
-                );
-              }
-              break;
-            case FilterOperator.IS_AFTER_OR_EQUAL_TO:
-              if (
-                expression.values.length === 2 &&
-                expression.values.every((v) => !!v)
-              ) {
-                const [dateString, timeString] = expression.values;
-                const date = new Date(`${dateString} ${timeString}`);
-                const utcDateString = toUTCDateString(date);
-                whereClauses.push(
-                  `${expression.field.name} >= TIMESTAMP '${utcDateString}'`
-                );
-              }
-              break;
-            default: {
-              console.error('Unknown operator:', expression.operator);
-              return whereClauses;
-            }
-          }
-          return whereClauses;
-        }, [])
-        .join(` ${logicalOperator} `);
-      layer.definitionExpression = where;
-    };
-    applyExpressions();
-  }, [expressions, layer, logicalOperator]);
 
   return (
     <CalcitePanel
