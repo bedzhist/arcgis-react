@@ -1,3 +1,4 @@
+import * as promiseUtils from '@arcgis/core/core/promiseUtils';
 import {
   CalciteComboboxCustomEvent,
   CalciteInputCustomEvent,
@@ -22,7 +23,7 @@ import {
   CalcitePopover,
   CalciteSelect
 } from '@esri/calcite-components-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { toUTCDateString } from '../../utils';
 import { FilterPanelLayer } from '../FilterPanel/FilterPanel';
@@ -117,6 +118,53 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
     ];
   }, []);
 
+  const updateUniqueValues = useCallback(
+    async (where: string) => {
+      const layer = props.layer;
+      if (!layer) {
+        // TODO: Handle error
+        return;
+      }
+      const response = await layer.queryFeatures({
+        where,
+        num: 30,
+        outFields: [props.expression.field.name],
+        groupByFieldsForStatistics: [props.expression.field.name],
+        outStatistics: [
+          {
+            statisticType: 'count',
+            onStatisticField: props.expression.field.name,
+            outStatisticFieldName: 'count'
+          }
+        ]
+      });
+      setExceededUniqueValuesTransferLimit(response.exceededTransferLimit);
+      const features = response.features.sort(
+        (a, b) => b.attributes['count'] - a.attributes['count']
+      );
+      setUniqueValueOptions(
+        features.map((feature) => {
+          let value = feature.attributes[props.expression.field.name];
+          let label = value;
+          if (
+            props.expression.operator === FilterOperator.DATE_INCLUDES ||
+            props.expression.operator === FilterOperator.DATE_EXCLUDES
+          ) {
+            const date = new Date(value);
+            label = date.toLocaleString();
+            value = toUTCDateString(date);
+          }
+          return {
+            value,
+            label,
+            count: feature.attributes['count']
+          };
+        })
+      );
+    },
+    [props.expression, props.layer]
+  );
+
   const handleDeleteClick = () => {
     props.onDelete(props.expression.id);
   };
@@ -164,44 +212,21 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       operator === FilterOperator.DATE_INCLUDES ||
       operator === FilterOperator.DATE_EXCLUDES
     ) {
-      const response = await layer.queryFeatures({
-        where: '1=1',
-        outFields: [props.expression.field.name],
-        groupByFieldsForStatistics: [props.expression.field.name],
-        outStatistics: [
-          {
-            statisticType: 'count',
-            onStatisticField: props.expression.field.name,
-            outStatisticFieldName: 'count'
-          }
-        ]
-      });
-      setExceededUniqueValuesTransferLimit(response.exceededTransferLimit);
-      const features = response.features.sort(
-        (a, b) => b.attributes['count'] - a.attributes['count']
-      );
-      setUniqueValueOptions(
-        features.map((feature) => {
-          let value = feature.attributes[props.expression.field.name];
-          let label = value;
-          if (
-            operator === FilterOperator.DATE_INCLUDES ||
-            operator === FilterOperator.DATE_EXCLUDES
-          ) {
-            const date = new Date(value);
-            label = date.toLocaleString();
-            value = toUTCDateString(date);
-          }
-          return {
-            value,
-            label,
-            count: feature.attributes['count']
-          };
-        })
-      );
+      await updateUniqueValues('1=1');
     }
     props.onExpressionChange(expression);
   };
+  const handleUniqueValuesFilterInput = useMemo(
+    () =>
+      promiseUtils.debounce(async (event: CalciteInputCustomEvent<void>) => {
+        const value = event.target.value;
+        await updateUniqueValues(
+          `${props.expression.field.name} LIKE '%${value}%'`
+        );
+      }),
+    [props.expression, updateUniqueValues]
+  );
+
   const handleValueInput = (event: CalciteInputCustomEvent<void>) => {
     const value = event.target.value;
     const expression = { ...props.expression, value };
@@ -302,10 +327,15 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
                 referenceElement={selectValuesButtonRef || ''}
                 placement="right-start"
               >
-                <div>
+                <div style={{ width: '280px' }}>
+                  <CalciteInput
+                    type="search"
+                    className="m-5"
+                    icon="search"
+                    onCalciteInputInput={handleUniqueValuesFilterInput}
+                  />
                   <CalciteList
                     selectionMode="multiple"
-                    filterEnabled
                     onCalciteListChange={handleValuesChange}
                     className="overflow-y-auto"
                     style={{ maxHeight: '240px' }}
