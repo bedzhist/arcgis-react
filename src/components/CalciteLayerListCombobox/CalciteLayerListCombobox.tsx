@@ -39,9 +39,7 @@ export interface CalciteLayerListComboboxProps
   onCalciteLayerListComboboxReady?: (layerList: LayerListViewModel) => void;
 }
 
-export const CalciteLayerListCombobox = (
-  props: CalciteLayerListComboboxProps
-) => {
+export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
   const {
     view: mapView,
     layerTypes,
@@ -181,6 +179,6 @@ export const CalciteLayerListCombobox = (
       )}
     </CalciteCombobox>
   );
-};
+}
 
 export default CalciteLayerListCombobox;

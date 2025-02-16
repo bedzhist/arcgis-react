@@ -1,47 +1,18 @@
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import {
-  CalciteButton,
   CalciteShell,
-  CalciteShellPanel,
-  CalciteTextArea
+  CalciteShellPanel
 } from '@esri/calcite-components-react';
-import { useActionState, useEffect, useRef, useState } from 'react';
-import { CalciteTextAreaCustomEvent } from '@esri/calcite-components';
-import lodash from 'lodash';
-
-interface ChatMessage {
-  id: string;
-  text: string;
-  role: 'user' | 'system';
-}
+import { useEffect, useRef } from 'react';
+import Chat from './components/Chat';
 
 export function App() {
   const viewRef = useRef<HTMLDivElement>(null);
 
-  const [, chatFormAction, isChatFormLoading] = useActionState<null, FormData>(
-    async (_, formData) => {
-      const query = formData.get('query');
-      if (typeof query !== 'string') {
-        return null;
-      }
-      const message: ChatMessage = {
-        id: lodash.uniqueId(),
-        text: query,
-        role: 'user'
-      };
-      setMessages((prevMessages) => [...prevMessages, message]);
-      return null;
-    },
-    null
-  );
-
-  const [query, setQuery] = useState<string>('');
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-
-  const handleQueryInput = (event: CalciteTextAreaCustomEvent<void>) => {
-    const value = event.target.value;
-    setQuery(value);
+  const chatQueryAction = async (query: string) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return `You said: ${query}`;
   };
 
   useEffect(() => {
@@ -69,46 +40,7 @@ export function App() {
         layout="vertical"
         resizable
       >
-        <div className="d-flex flex-column h-100 p-5">
-          <div className="h-100">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className="d-flex justify-end w-100 mb-5"
-              >
-                <span className="py-3 px-5 border-1 rounded-round bg-2">
-                  {message.text}
-                </span>
-              </div>
-            ))}
-          </div>
-          <form
-            className="d-flex items-center gap-3"
-            action={chatFormAction}
-          >
-            <CalciteTextArea
-              name="query"
-              resize="none"
-              placeholder="Enter a query"
-              style={{ height: '52px' }}
-              value={query}
-              onCalciteTextAreaInput={handleQueryInput}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault();
-                }
-              }}
-            />
-            <CalciteButton
-              type="submit"
-              iconStart="send"
-              scale="l"
-              round
-              appearance="transparent"
-              disabled={!query || isChatFormLoading}
-            />
-          </form>
-        </div>
+        <Chat queryAction={chatQueryAction} />
       </CalciteShellPanel>
       <div
         ref={viewRef}

@@ -11,7 +11,7 @@ export interface LayerListProps {
   listItemCreatedFunction?: __esri.LayerListListItemCreatedHandler;
 }
 
-export const LayerList = (props: LayerListProps) => {
+export function LayerList(props: LayerListProps) {
   const layerListVM = useValue<__esri.LayerListViewModel | null>(null);
 
   const [operationalItems, setOperationalItems] =
@@ -107,6 +107,6 @@ export const LayerList = (props: LayerListProps) => {
         ))}
     </div>
   );
-};
+}
 
 export default LayerList;

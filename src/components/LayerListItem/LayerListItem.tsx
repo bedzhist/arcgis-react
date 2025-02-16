@@ -34,7 +34,7 @@ const getToggledActions = (
   }, []);
 };
 
-export const LayerListItem = (props: LayerListItemProps) => {
+export function LayerListItem(props: LayerListItemProps) {
   const [visible, setVisible] = useState(props.item.visible);
   const [toggledActions, setToggledActions] = useState<string[]>(() =>
     getToggledActions(props.item.actionsSections)
@@ -209,6 +209,6 @@ export const LayerListItem = (props: LayerListItemProps) => {
       {renderActions()}
     </CalciteListItem>
   );
-};
+}
 
 export default LayerListItem;

@@ -22,13 +22,12 @@ import {
   CalcitePopover,
   CalciteSelect
 } from '@esri/calcite-components-react';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { toUTCDateString } from '../../utils';
 import { FilterPanelLayer } from '../FilterPanel/FilterPanel';
 import { FilterExpression, FilterOperator } from './types';
 import { getOperators } from './utils';
-import _ from 'lodash';
-import { toUTCDateString } from '../../utils';
 
 interface FilterPanelOperatorItem {
   value: FilterOperator;
@@ -49,8 +48,6 @@ export interface FilterPanelExpressionProps {
 }
 
 export function FilterPanelExpression(props: FilterPanelExpressionProps) {
-  // const selectValuesPopoverRef = useRef<HTMLCalcitePopoverElement>(null);
-
   const [selectValuesButtonRef, setSelectValuesButtonRef] =
     useState<HTMLCalciteButtonElement | null>(null);
   const [uniqueValueOptions, setUniqueValueOptions] = useState<
@@ -217,7 +214,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
   const handleDateValueChange = (
     event: CalciteInputDatePickerCustomEvent<void>
   ) => {
-    let value = event.target.value;
+    const value = event.target.value;
     if (Array.isArray(value)) {
       // TODO: Handle error
       return;

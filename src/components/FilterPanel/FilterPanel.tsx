@@ -34,7 +34,7 @@ enum FilterPanelLogicalOperator {
   OR = 'OR'
 }
 
-export const FilterPanel = (props: FilterPanelProps) => {
+export function FilterPanel(props: FilterPanelProps) {
   const [layerItem, setLayerItem] =
     useState<CalciteLayerListComboboxItem | null>(null);
   const [expressions, setExpressions] = useState<FilterExpression[]>([]);
@@ -461,6 +461,6 @@ export const FilterPanel = (props: FilterPanelProps) => {
       </CalciteScrim>
     </CalcitePanel>
   );
-};
+}
 
 export default FilterPanel;
