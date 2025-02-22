@@ -1,32 +1,38 @@
+import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
 import {
+  CalciteButton,
+  CalciteLabel,
   CalciteShell,
-  CalciteShellPanel
+  CalciteShellPanel,
+  CalciteTextArea
 } from '@esri/calcite-components-react';
-import { useEffect, useRef } from 'react';
-import Chat from './components/Chat';
+import { useEffect, useRef, useState } from 'react';
+import { US_VOTING_PRECINCTS_2008_ELECTION_LAYER_ID } from './utils';
 
 export function App() {
   const viewRef = useRef<HTMLDivElement>(null);
 
-  const chatQueryAction = async (query: string) => {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return `You said: ${query}`;
-  };
+  const [, setView] = useState<MapView>();
 
   useEffect(() => {
     const vielEl = viewRef.current;
     if (!vielEl) {
       return;
     }
+    const layer = new FeatureLayer({
+      portalItem: { id: US_VOTING_PRECINCTS_2008_ELECTION_LAYER_ID }
+    });
     const map = new Map({
-      basemap: 'dark-gray-vector'
+      basemap: 'dark-gray-vector',
+      layers: [layer]
     });
     const mapView = new MapView({
       container: vielEl,
       map
     });
+    setView(mapView);
     return () => {
       mapView.destroy();
     };
@@ -40,7 +46,28 @@ export function App() {
         layout="vertical"
         resizable
       >
-        <Chat queryAction={chatQueryAction} />
+        <form className="p-5">
+          <CalciteLabel className="relative pb-10 rounded-round border-1 border-color-1 bg-1">
+            <CalciteTextArea
+              resize="none"
+              rows={2}
+              style={{
+                '--calcite-border-width-sm': 0,
+                '--calcite-text-area-background-color': 'transparent',
+                '--calcite-ui-focus-color': 'transparent'
+              }}
+            />
+            <CalciteButton
+              iconStart="send"
+              round
+              appearance="transparent"
+              className="absolute bottom-0 right-0 mb-3 mr-3"
+              style={{
+                textWrap: 'pretty'
+              }}
+            />
+          </CalciteLabel>
+        </form>
       </CalciteShellPanel>
       <div
         ref={viewRef}
