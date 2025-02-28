@@ -338,6 +338,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
                     selectionMode="multiple"
                     onCalciteListChange={handleValuesChange}
                     className="overflow-y-auto"
+                    scale="s"
                     style={{ maxHeight: '240px' }}
                   >
                     {uniqueValueOptions.map((option) => (
@@ -376,7 +377,10 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
               </CalcitePopover>,
               document.body
             )}
-          <CalciteList selectionMode="none">
+          <CalciteList
+            selectionMode="none"
+            scale="s"
+          >
             {props.expression.values.map((value) => (
               <CalciteListItem
                 key={value}
@@ -477,7 +481,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
           <CalciteComboboxItem
             key={field.name}
             value={field.name}
-            textLabel={field.alias}
+            heading={field.alias ?? ''}
             selected={field === props.expression.field}
             icon={getFieldIcon(field)}
           />

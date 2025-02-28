@@ -767,7 +767,7 @@ export function AddData(props: AddDataProps) {
         return;
       }
       const fullExtent = fullExtentList.reduce((acc, extent) => {
-        return acc.union(extent);
+        return extent ? acc?.union(extent) : acc;
       });
       view.goTo(fullExtent);
     } else {
@@ -805,7 +805,7 @@ export function AddData(props: AddDataProps) {
     let url = '';
     switch (source) {
       case ResultsSource.LIVING_ATLAS: {
-        const currLivingAtlasGroupId = livingAtlasGroupId.current;
+        const currLivingAtlasGroupId = livingAtlasGroupId.value;
         if (!currLivingAtlasGroupId) {
           // Handle error
           return;
@@ -835,7 +835,7 @@ export function AddData(props: AddDataProps) {
   const handleResultsPaginationChange = (
     event: CalcitePaginationCustomEvent<void>
   ) => {
-    const currLivingAtlasGroupId = livingAtlasGroupId.current;
+    const currLivingAtlasGroupId = livingAtlasGroupId.value;
     if (!currLivingAtlasGroupId) {
       // Handle error
       return;
@@ -850,19 +850,20 @@ export function AddData(props: AddDataProps) {
   const handleSearchResultsInput = (event: CalciteInputCustomEvent<void>) => {
     const searchValue = event.target.value;
     setResultsSearchValue(searchValue);
-    const currLivingAtlasGroupId = livingAtlasGroupId.current;
+    const currLivingAtlasGroupId = livingAtlasGroupId.value;
     if (!currLivingAtlasGroupId) {
       // Handle error
       return;
     }
     setResultsStart(1);
-    const currResultsSearchTimeout = resultsSearchTimeout.current;
+    const currResultsSearchTimeout = resultsSearchTimeout.value;
     if (currResultsSearchTimeout) clearTimeout(currResultsSearchTimeout);
-    resultsSearchTimeout.current = setTimeout(() => {
+    const newResultsSearchTimeout = setTimeout(() => {
       fetchResults(resultsSource, {
         q: `${RESULTS_Q} ${searchValue}`
       });
     }, 500);
+    resultsSearchTimeout.setValue(newResultsSearchTimeout);
   };
   const getResultsSource = (source: string) => {
     switch (source) {
@@ -907,7 +908,7 @@ export function AddData(props: AddDataProps) {
         return;
       }
       const newLivingAtlasGroupId = communityGroupsResponse.data.results[0].id;
-      livingAtlasGroupId.current = newLivingAtlasGroupId;
+      livingAtlasGroupId.setValue(newLivingAtlasGroupId);
       fetchResults(
         resultsSource,
         {

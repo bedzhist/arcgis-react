@@ -27,8 +27,11 @@ const getToggledActions = (
   return actionsSections.reduce<string[]>((acc, section) => {
     return acc.concat(
       section
-        .filter((action) => action.type === 'toggle' && action.value === true)
-        .map((action) => action.id)
+        .filter(
+          (action) =>
+            action.type === 'toggle' && action.value === true && !!action.id
+        )
+        .map((action) => action.id ?? '')
         .toArray()
     );
   }, []);
@@ -64,15 +67,16 @@ export function LayerListItem(props: LayerListItemProps) {
     if (actions.length === 0) return;
     if (actions.length === 1) {
       const actionsSection = actions.getItemAt(0);
-      if (actionsSection.length === 0) return;
+      if (!actionsSection || actionsSection.length === 0) return;
       if (actionsSection.length === 1) {
         const action = actionsSection.getItemAt(0);
+        if (!action || !action.id) return null;
         return (
           <CalciteAction
             slot="actions-end"
-            icon={action.icon}
-            text={action.title}
-            title={action.title}
+            icon={action.icon ?? 'ellipsis'}
+            text={action.title ?? 'Actions'}
+            title={action.title ?? 'Actions'}
             scale="s"
             appearance="transparent"
             active={toggledActions.includes(action.id)}
@@ -92,11 +96,14 @@ export function LayerListItem(props: LayerListItemProps) {
         {actions.map((actionsSection, i) => (
           <CalciteActionGroup key={i}>
             {actionsSection.map((action, i) => {
+              if (!action.id) {
+                return null;
+              }
               return (
                 <CalciteAction
                   key={i}
-                  icon={action.icon}
-                  text={action.title}
+                  icon={action.icon ?? 'ellipsis'}
+                  text={action.title ?? 'Action'}
                   textEnabled
                   scale="s"
                   active={toggledActions.includes(action.id)}
@@ -120,7 +127,7 @@ export function LayerListItem(props: LayerListItemProps) {
       <>
         <CalciteAction
           slot="actions-end"
-          icon={panel.icon}
+          icon={panel.icon ?? 'ellipsis'}
           text={panel.title}
           scale="s"
           appearance="transparent"
@@ -135,7 +142,7 @@ export function LayerListItem(props: LayerListItemProps) {
           >
             <div
               ref={(el) => {
-                if (!el) return;
+                if (!el || !content) return;
                 if (content instanceof Widget) {
                   if (!content.container) {
                     content.container = document.createElement('div');

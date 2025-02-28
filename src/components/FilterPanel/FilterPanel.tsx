@@ -303,7 +303,9 @@ export function FilterPanel(props: FilterPanelProps) {
           break;
         }
       }
-      props.view?.goTo(layer.fullExtent);
+      if (layer.type !== 'subtype-sublayer') {
+        props.view?.goTo(layer.fullExtent);
+      }
     } else {
       if (!layer) return;
       layer.definitionExpression = '';
@@ -393,7 +395,7 @@ export function FilterPanel(props: FilterPanelProps) {
             view={props.view}
             label="Layer"
             selectionMode="single"
-            value={layerItem?.id ?? ''}
+            value={layerItem?.id}
             onCalciteLayerListComboboxChange={handleLayerChange}
             overlayPositioning="fixed"
           />
@@ -420,7 +422,7 @@ export function FilterPanel(props: FilterPanelProps) {
           iconStart="trash"
           onClick={handleRemoveAllClick}
           className="text-truncate mt-3 mb-1"
-          disabled={!expressions.length || undefined}
+          disabled={!expressions.length}
         >
           Remove all expressions
         </CalciteButton>
