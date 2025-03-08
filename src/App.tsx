@@ -1,19 +1,29 @@
-import Map from '@arcgis/core/Map';
-import { CalciteShell } from '@esri/calcite-components-react';
-import { useValue } from './hooks';
+import {
+  CalcitePanel,
+  CalciteShell,
+  CalciteShellPanel
+} from '@esri/calcite-components-react';
+import { useThemeContext } from './contexts';
+import { Chatbot } from './components';
 
 export function App() {
-  const map = useValue(
-    new Map({
-      basemap: 'dark-gray-vector'
-    })
-  );
+  const themeContext = useThemeContext();
 
   return (
     <CalciteShell>
-      <arcgis-map map={map.value}>
-        <arcgis-layer-list position="top-right" />
-      </arcgis-map>
+      <CalciteShellPanel
+        slot="panel-start"
+        position="start"
+        layout="vertical"
+        resizable
+      >
+        <CalcitePanel>
+          <Chatbot queryAction={async () => 'sdsd'} />
+        </CalcitePanel>
+      </CalciteShellPanel>
+      <arcgis-map
+        basemap={themeContext?.darkMode ? 'dark-gray-vector' : 'gray-vector'}
+      />
     </CalciteShell>
   );
 }

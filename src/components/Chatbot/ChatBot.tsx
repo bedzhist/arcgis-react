@@ -3,25 +3,25 @@ import { CalciteButton, CalciteTextArea } from '@esri/calcite-components-react';
 import _ from 'lodash';
 import { useRef, useState } from 'react';
 
-interface ChatMessage {
+interface ChatbotMessage {
   id: string;
   text: string;
   role: 'user' | 'system';
 }
 
-interface ChatProps {
+interface ChatbotProps {
   queryAction: (query: string) => Promise<string>;
 }
 
-export function Chat(props: ChatProps) {
+export function Chatbot(props: ChatbotProps) {
   const chatFormRef = useRef<HTMLFormElement>(null);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatbotMessage[]>([]);
   const [query, setQuery] = useState<string>('');
   const [isChatFormLoading, setIsChatFormLoading] = useState<boolean>(false);
 
   const submitQuery = async (newQuery: string) => {
-    const message: ChatMessage = {
+    const message: ChatbotMessage = {
       id: _.uniqueId(),
       text: newQuery,
       role: 'user'
@@ -31,7 +31,7 @@ export function Chat(props: ChatProps) {
     setIsChatFormLoading(true);
     const systemText = await props.queryAction(newQuery);
     setIsChatFormLoading(false);
-    const systemMessage: ChatMessage = {
+    const systemMessage: ChatbotMessage = {
       id: _.uniqueId(),
       text: systemText,
       role: 'system'
@@ -39,7 +39,8 @@ export function Chat(props: ChatProps) {
     setMessages((prevMessages) => [...prevMessages, systemMessage]);
   };
   const handleQueryInput = (event: CalciteTextAreaCustomEvent<void>) => {
-    const value = event.target.value;
+    const target = event.target;
+    const value = target.value;
     setQuery(value);
   };
   const handleQueryKeyDown = (
@@ -106,7 +107,10 @@ export function Chat(props: ChatProps) {
           name="query"
           resize="none"
           placeholder="Enter a query"
-          style={{ height: '66px' }}
+          style={{
+            '--calcite-text-area-min-width': '11rem'
+          }}
+          rows={1}
           value={query}
           onCalciteTextAreaInput={handleQueryInput}
           onKeyDown={handleQueryKeyDown}
@@ -124,4 +128,4 @@ export function Chat(props: ChatProps) {
   );
 }
 
-export default Chat;
+export default Chatbot;
