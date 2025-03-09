@@ -1,12 +1,7 @@
-import { TargetedEvent } from '@arcgis/map-components';
-import {
-  CalciteButton,
-  CalciteLabel,
-  CalciteLoader,
-  CalciteTextArea
-} from '@esri/calcite-components-react';
+import { CalciteButton, CalciteLoader } from '@esri/calcite-components-react';
 import _ from 'lodash';
 import { useRef, useState } from 'react';
+import styles from './Chatbot.module.scss';
 
 interface ChatbotMessage {
   id: string;
@@ -22,7 +17,7 @@ export function Chatbot(props: ChatbotProps) {
   const chatFormRef = useRef<HTMLFormElement>(null);
 
   const [messages, setMessages] = useState<ChatbotMessage[]>([]);
-  const [query, setQuery] = useState<string>('');
+  const [query, setQuery] = useState<string>();
   const [isChatFormLoading, setIsChatFormLoading] = useState<boolean>(false);
 
   const submitQuery = async (newQuery: string) => {
@@ -43,22 +38,26 @@ export function Chatbot(props: ChatbotProps) {
     };
     setMessages((prevMessages) => [...prevMessages, systemMessage]);
   };
-  const handleQueryInput = (
-    event: TargetedEvent<HTMLCalciteTextAreaElement, undefined>
-  ) => {
+  const adjustTextAreaHeight = (textArea: HTMLTextAreaElement) => {
+    textArea.style.height = 'auto';
+    textArea.style.height = `${textArea.scrollHeight}px`;
+  };
+  const handleQueryInput = (event: React.FormEvent<HTMLTextAreaElement>) => {
     const target = event.currentTarget;
     const value = target.value;
     setQuery(value);
+    adjustTextAreaHeight(target);
   };
   const handleQueryKeyDown = (
-    event: React.KeyboardEvent<HTMLCalciteTextAreaElement>
+    event: React.KeyboardEvent<HTMLTextAreaElement>
   ) => {
     if (event.key === 'Enter') {
       event.preventDefault();
       if (isChatFormLoading) {
         return;
       }
-      const value = event.currentTarget.value;
+      const target = event.currentTarget;
+      const value = target.value;
       if (!value) {
         return;
       }
@@ -75,6 +74,18 @@ export function Chatbot(props: ChatbotProps) {
       return null;
     }
     await submitQuery(newQuery);
+  };
+  const queryRefCallback = (el: HTMLTextAreaElement) => {
+    if (!el) {
+      return;
+    }
+    const resizeObserver = new ResizeObserver(() => {
+      adjustTextAreaHeight(el);
+    });
+    resizeObserver.observe(el);
+    return () => {
+      resizeObserver.unobserve(el);
+    };
   };
 
   return (
@@ -118,27 +129,26 @@ export function Chatbot(props: ChatbotProps) {
       </div>
       <form
         ref={chatFormRef}
+        className="d-flex items-center gap-3"
         onSubmit={handleChatFormSubmit}
       >
-        <CalciteLabel>
-          <CalciteTextArea
-            resize="none"
-            rows={2}
-            value={query}
-            onCalciteTextAreaInput={handleQueryInput}
-            onKeyDown={handleQueryKeyDown}
-          >
-            <CalciteButton
-              slot="footer-end"
-              type="submit"
-              iconStart="send"
-              scale="m"
-              round
-              appearance="transparent"
-              disabled={!query || isChatFormLoading}
-            />
-          </CalciteTextArea>
-        </CalciteLabel>
+        <textarea
+          ref={queryRefCallback}
+          rows={2}
+          value={query}
+          className={styles.textarea}
+          onInput={handleQueryInput}
+          onKeyDown={handleQueryKeyDown}
+        />
+        <CalciteButton
+          slot="footer-end"
+          type="submit"
+          iconStart="send"
+          scale="m"
+          round
+          appearance="transparent"
+          disabled={!query || isChatFormLoading}
+        />
       </form>
     </div>
   );
