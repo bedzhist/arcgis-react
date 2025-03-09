@@ -134,6 +134,7 @@ export function Chatbot(props: ChatbotProps) {
       >
         <textarea
           ref={queryRefCallback}
+          name="query"
           rows={2}
           value={query}
           className={styles.textarea}
