@@ -99,10 +99,11 @@ export function Chatbot(props: ChatbotProps) {
               className="d-flex justify-end w-100 mb-7"
             >
               <div
-                className="py-3 px-5 border-1 border-color-1 rounded-round bg-1"
+                className="py-3 px-5 border-1 border-color-1 bg-1"
                 style={{
                   maxWidth: '240px',
-                  wordBreak: 'break-word'
+                  wordBreak: 'break-word',
+                  borderRadius: '8px'
                 }}
               >
                 {message.text}
@@ -111,11 +112,7 @@ export function Chatbot(props: ChatbotProps) {
           ) : (
             <div
               key={message.id}
-              className="d-flex justify-start w-100 mb-5"
-              style={{
-                maxWidth: '240px',
-                wordBreak: 'break-word'
-              }}
+              className="d-flex justify-start w-100 mb-7"
             >
               <div className="py-2 px-5">{message.text}</div>
             </div>
