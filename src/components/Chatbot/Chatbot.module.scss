@@ -13,7 +13,7 @@
   outline-offset: calc(-2px*(1 - (2* clamp(0, var(--calcite-offset-invert-focus), 1))));
   padding-block: 0.5rem;
   padding-inline: 0.75rem;
-  max-height: 8.5rem;
+  max-height: 136px;
 
   &:focus {
     outline: 2px solid var(--calcite-color-focus, var(--calcite-ui-focus-color, var(--calcite-color-brand)));

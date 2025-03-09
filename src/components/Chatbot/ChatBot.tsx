@@ -41,6 +41,7 @@ export function Chatbot(props: ChatbotProps) {
   const adjustTextAreaHeight = (textArea: HTMLTextAreaElement) => {
     textArea.style.height = 'auto';
     textArea.style.height = `${textArea.scrollHeight}px`;
+    textArea.scrollTop = textArea.scrollHeight;
   };
   const handleQueryInput = (event: React.FormEvent<HTMLTextAreaElement>) => {
     const target = event.currentTarget;
