@@ -1,5 +1,10 @@
-import { CalciteTextAreaCustomEvent } from '@esri/calcite-components';
-import { CalciteButton, CalciteTextArea } from '@esri/calcite-components-react';
+import { TargetedEvent } from '@arcgis/map-components';
+import {
+  CalciteButton,
+  CalciteLabel,
+  CalciteLoader,
+  CalciteTextArea
+} from '@esri/calcite-components-react';
 import _ from 'lodash';
 import { useRef, useState } from 'react';
 
@@ -38,8 +43,10 @@ export function Chatbot(props: ChatbotProps) {
     };
     setMessages((prevMessages) => [...prevMessages, systemMessage]);
   };
-  const handleQueryInput = (event: CalciteTextAreaCustomEvent<void>) => {
-    const target = event.target;
+  const handleQueryInput = (
+    event: TargetedEvent<HTMLCalciteTextAreaElement, undefined>
+  ) => {
+    const target = event.currentTarget;
     const value = target.value;
     setQuery(value);
   };
@@ -79,50 +86,59 @@ export function Chatbot(props: ChatbotProps) {
               key={message.id}
               className="d-flex justify-end w-100 mb-7"
             >
-              <span className="py-3 px-5 border-1 border-color-1 rounded-round bg-1">
+              <div
+                className="py-3 px-5 border-1 border-color-1 rounded-round bg-1"
+                style={{
+                  maxWidth: '240px',
+                  wordBreak: 'break-word'
+                }}
+              >
                 {message.text}
-              </span>
+              </div>
             </div>
           ) : (
             <div
               key={message.id}
               className="d-flex justify-start w-100 mb-5"
+              style={{
+                maxWidth: '240px',
+                wordBreak: 'break-word'
+              }}
             >
-              <span className="py-2 px-5">{message.text}</span>
+              <div className="py-2 px-5">{message.text}</div>
             </div>
           )
         )}
         {isChatFormLoading && (
-          <div className="d-flex justify-start w-100 mb-5">
+          <div className="d-flex justify-start w-100 mb-5 items-center">
+            <CalciteLoader inline />
             <span className="py-2 px-5">Thinking...</span>
           </div>
         )}
       </div>
       <form
         ref={chatFormRef}
-        className="d-flex items-center gap-3"
         onSubmit={handleChatFormSubmit}
       >
-        <CalciteTextArea
-          name="query"
-          resize="none"
-          placeholder="Enter a query"
-          style={{
-            '--calcite-text-area-min-width': '11rem'
-          }}
-          rows={1}
-          value={query}
-          onCalciteTextAreaInput={handleQueryInput}
-          onKeyDown={handleQueryKeyDown}
-        />
-        <CalciteButton
-          type="submit"
-          iconStart="send"
-          scale="l"
-          round
-          appearance="transparent"
-          disabled={!query || isChatFormLoading}
-        />
+        <CalciteLabel>
+          <CalciteTextArea
+            resize="none"
+            rows={2}
+            value={query}
+            onCalciteTextAreaInput={handleQueryInput}
+            onKeyDown={handleQueryKeyDown}
+          >
+            <CalciteButton
+              slot="footer-end"
+              type="submit"
+              iconStart="send"
+              scale="m"
+              round
+              appearance="transparent"
+              disabled={!query || isChatFormLoading}
+            />
+          </CalciteTextArea>
+        </CalciteLabel>
       </form>
     </div>
   );
