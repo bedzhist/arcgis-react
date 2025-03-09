@@ -1,5 +1,5 @@
 import { CalciteButton, CalciteLoader } from '@esri/calcite-components-react';
-import _ from 'lodash';
+import { v4 } from 'uuid';
 import { useRef, useState } from 'react';
 import styles from './Chatbot.module.scss';
 
@@ -22,7 +22,7 @@ export function Chatbot(props: ChatbotProps) {
 
   const submitQuery = async (newQuery: string) => {
     const message: ChatbotMessage = {
-      id: _.uniqueId(),
+      id: v4(),
       text: newQuery,
       role: 'user'
     };
@@ -32,7 +32,7 @@ export function Chatbot(props: ChatbotProps) {
     const systemText = await props.queryAction(newQuery);
     setIsChatFormLoading(false);
     const systemMessage: ChatbotMessage = {
-      id: _.uniqueId(),
+      id: v4(),
       text: systemText,
       role: 'system'
     };

@@ -9,7 +9,7 @@ import {
   CalciteScrim,
   CalciteSelect
 } from '@esri/calcite-components-react';
-import _ from 'lodash';
+import { v4 } from 'uuid';
 import { createRef, useMemo, useState } from 'react';
 import { ArcGISLayer } from '../../types';
 import { toUTCDateString } from '../../utils';
@@ -329,7 +329,7 @@ export function FilterPanel(props: FilterPanelProps) {
     const field = layer.fields[0];
     const operator = getOperators(field)[0];
     const newExpression: FilterExpression = {
-      id: _.uniqueId(),
+      id: v4(),
       field: field,
       operator: operator,
       value: '',

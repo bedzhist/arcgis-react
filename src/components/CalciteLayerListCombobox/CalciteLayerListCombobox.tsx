@@ -7,8 +7,8 @@ import {
   CalciteComboboxItemGroup
 } from '@esri/calcite-components-react';
 import { EventName } from '@lit/react';
-import _ from 'lodash';
 import { useEffect, useMemo, useState } from 'react';
+import { v4 } from 'uuid';
 import { useValue } from '../../hooks';
 import { ArcGISLayer, ComponentProps } from '../../types';
 
@@ -175,7 +175,7 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
           if (!layer) {
             throw new Error('Layer is required');
           }
-          const id = oldItem?.id ?? _.uniqueId('layer-');
+          const id = oldItem?.id ?? v4();
           const title = layer.title ?? '';
           return {
             id,
