@@ -352,7 +352,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
                       >
                         <div
                           slot="actions-end"
-                          className="p-5 text-2"
+                          className="p-5 text-sm"
                         >
                           {option.count}
                         </div>
@@ -360,7 +360,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
                     ))}
                   </CalciteList>
                   {exceededUniqueValuesTransferLimit && (
-                    <div className="m-4 text-2">
+                    <div className="m-4 text-sm">
                       Too many values to display.
                     </div>
                   )}

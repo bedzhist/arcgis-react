@@ -1026,7 +1026,7 @@ export function AddData(props: AddDataProps) {
               ref={inputFileRef}
               type="file"
               accept=".csv,.zip,.geojson,.kml,.gpx"
-              className="d-flex border-1 border-dashed border-color-input bg-1 cursor-pointer inline-size-100 box-border text-3 font-default focus:outline-2 focus:outline-color-brand"
+              className="d-flex border-1 border-dashed border-color-input bg-1 cursor-pointer inline-size-100 box-border text-default font-default focus:outline-2 focus:outline-color-brand"
               style={{
                 outlineOffset: '-2px',
                 paddingInline: '0.75rem',

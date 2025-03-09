@@ -646,13 +646,25 @@ $fontStyles: (
 }
 
 $fontSizes: (
-  1: var(--calcite-font-size-xs),
-  2: var(--calcite-font-size-sm),
-  3: var(--calcite-font-size),
-  4: var(--calcite-font-size-md),
-  5: var(--calcite-font-size-lg),
-  6: var(--calcite-font-size-xl),
-  7: var(--calcite-font-size-xxl)
+  -3: var(--calcite-font-size--3),
+  -2: var(--calcite-font-size--2),
+  -1: var(--calcite-font-size--1),
+  0: var(--calcite-font-size-0),
+  1: var(--calcite-font-size-1),
+  2: var(--calcite-font-size-2),
+  3: var(--calcite-font-size-3),
+  4: var(--calcite-font-size-4),
+  5: var(--calcite-font-size-5),
+  6: var(--calcite-font-size-6),
+  7: var(--calcite-font-size-7),
+  8: var(--calcite-font-size-8),
+  xs: var(--calcite-font-size-xs),
+  sm: var(--calcite-font-size-sm),
+  default: var(--calcite-font-size),
+  md: var(--calcite-font-size-md),
+  lg: var(--calcite-font-size-lg),
+  xl: var(--calcite-font-size-xl),
+  xxl: var(--calcite-font-size-xxl)
 );
 
 @each $name, $value in $fontSizes {
