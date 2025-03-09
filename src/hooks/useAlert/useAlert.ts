@@ -1,21 +1,21 @@
 import { useState } from 'react';
+import { v4 } from 'uuid';
 import { Alert, AlertProps } from '../../contexts/AlertContext';
-import _ from 'lodash';
 
 export const useAlert = () => {
   const [alert, setAlert] = useState<Alert | null>(null);
 
   const showErrorAlert = (errorAlert: Omit<AlertProps, 'kind'>) =>
-    setAlert({ ...errorAlert, kind: 'danger', id: _.uniqueId() });
+    setAlert({ ...errorAlert, kind: 'danger', id: v4() });
   const showSuccessAlert = (successAlert: Omit<AlertProps, 'kind'>) =>
-    setAlert({ ...successAlert, kind: 'success', id: _.uniqueId() });
+    setAlert({ ...successAlert, kind: 'success', id: v4() });
   const showInfoAlert = (infoAlert: Omit<AlertProps, 'kind'>) =>
-    setAlert({ ...infoAlert, kind: 'info', id: _.uniqueId() });
+    setAlert({ ...infoAlert, kind: 'info', id: v4() });
   const showWarningAlert = (warningAlert: Omit<AlertProps, 'kind'>) =>
-    setAlert({ ...warningAlert, kind: 'warning', id: _.uniqueId() });
+    setAlert({ ...warningAlert, kind: 'warning', id: v4() });
   const showDefaultErrorAlert = () =>
     setAlert({
-      id: _.uniqueId(),
+      id: v4(),
       title: 'Error',
       message:
         'An error occurred. Please contact support if the problem persists.',

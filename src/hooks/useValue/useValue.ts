@@ -16,7 +16,10 @@ import { useRef } from 'react';
  * const valueRef = useValue(() => 10);
  * console.log(valueRef.current); // 10
  */
-export function useValue<T>(initialValue: T | (() => T)): React.RefObject<T> {
+export function useValue<T>(initialValue: T | (() => T)): {
+  value: T;
+  setValue: (value: T) => void;
+} {
   const ref = useRef<T>(null);
   if (ref.current === null) {
     ref.current =
@@ -24,7 +27,12 @@ export function useValue<T>(initialValue: T | (() => T)): React.RefObject<T> {
         ? (initialValue as () => T)()
         : initialValue;
   }
-  return ref as React.RefObject<T>;
+  return {
+    value: ref.current,
+    setValue: (value: T) => {
+      ref.current = value;
+    }
+  };
 }
 
 export default useValue;

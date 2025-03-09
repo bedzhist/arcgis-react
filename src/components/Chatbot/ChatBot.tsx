@@ -1,28 +1,28 @@
-import { CalciteTextAreaCustomEvent } from '@esri/calcite-components';
-import { CalciteButton, CalciteTextArea } from '@esri/calcite-components-react';
-import _ from 'lodash';
+import { CalciteButton, CalciteLoader } from '@esri/calcite-components-react';
+import { v4 } from 'uuid';
 import { useRef, useState } from 'react';
+import styles from './Chatbot.module.scss';
 
-interface ChatMessage {
+interface ChatbotMessage {
   id: string;
   text: string;
   role: 'user' | 'system';
 }
 
-interface ChatProps {
+interface ChatbotProps {
   queryAction: (query: string) => Promise<string>;
 }
 
-export function Chat(props: ChatProps) {
+export function Chatbot(props: ChatbotProps) {
   const chatFormRef = useRef<HTMLFormElement>(null);
 
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [query, setQuery] = useState<string>('');
+  const [messages, setMessages] = useState<ChatbotMessage[]>([]);
+  const [query, setQuery] = useState<string>();
   const [isChatFormLoading, setIsChatFormLoading] = useState<boolean>(false);
 
   const submitQuery = async (newQuery: string) => {
-    const message: ChatMessage = {
-      id: _.uniqueId(),
+    const message: ChatbotMessage = {
+      id: v4(),
       text: newQuery,
       role: 'user'
     };
@@ -31,26 +31,33 @@ export function Chat(props: ChatProps) {
     setIsChatFormLoading(true);
     const systemText = await props.queryAction(newQuery);
     setIsChatFormLoading(false);
-    const systemMessage: ChatMessage = {
-      id: _.uniqueId(),
+    const systemMessage: ChatbotMessage = {
+      id: v4(),
       text: systemText,
       role: 'system'
     };
     setMessages((prevMessages) => [...prevMessages, systemMessage]);
   };
-  const handleQueryInput = (event: CalciteTextAreaCustomEvent<void>) => {
-    const value = event.target.value;
+  const adjustTextAreaHeight = (textArea: HTMLTextAreaElement) => {
+    textArea.style.height = 'auto';
+    textArea.style.height = `${textArea.scrollHeight}px`;
+  };
+  const handleQueryInput = (event: React.FormEvent<HTMLTextAreaElement>) => {
+    const target = event.currentTarget;
+    const value = target.value;
     setQuery(value);
+    adjustTextAreaHeight(target);
   };
   const handleQueryKeyDown = (
-    event: React.KeyboardEvent<HTMLCalciteTextAreaElement>
+    event: React.KeyboardEvent<HTMLTextAreaElement>
   ) => {
     if (event.key === 'Enter') {
       event.preventDefault();
       if (isChatFormLoading) {
         return;
       }
-      const value = event.currentTarget.value;
+      const target = event.currentTarget;
+      const value = target.value;
       if (!value) {
         return;
       }
@@ -68,6 +75,18 @@ export function Chat(props: ChatProps) {
     }
     await submitQuery(newQuery);
   };
+  const queryRefCallback = (el: HTMLTextAreaElement) => {
+    if (!el) {
+      return;
+    }
+    const resizeObserver = new ResizeObserver(() => {
+      adjustTextAreaHeight(el);
+    });
+    resizeObserver.observe(el);
+    return () => {
+      resizeObserver.unobserve(el);
+    };
+  };
 
   return (
     <div className="d-flex flex-column h-100 p-5">
@@ -78,21 +97,32 @@ export function Chat(props: ChatProps) {
               key={message.id}
               className="d-flex justify-end w-100 mb-7"
             >
-              <span className="py-3 px-5 border-1 border-color-1 rounded-round bg-1">
+              <div
+                className="py-3 px-5 border-1 border-color-1 rounded-round bg-1"
+                style={{
+                  maxWidth: '240px',
+                  wordBreak: 'break-word'
+                }}
+              >
                 {message.text}
-              </span>
+              </div>
             </div>
           ) : (
             <div
               key={message.id}
               className="d-flex justify-start w-100 mb-5"
+              style={{
+                maxWidth: '240px',
+                wordBreak: 'break-word'
+              }}
             >
-              <span className="py-2 px-5">{message.text}</span>
+              <div className="py-2 px-5">{message.text}</div>
             </div>
           )
         )}
         {isChatFormLoading && (
-          <div className="d-flex justify-start w-100 mb-5">
+          <div className="d-flex justify-start w-100 mb-5 items-center">
+            <CalciteLoader inline />
             <span className="py-2 px-5">Thinking...</span>
           </div>
         )}
@@ -102,19 +132,20 @@ export function Chat(props: ChatProps) {
         className="d-flex items-center gap-3"
         onSubmit={handleChatFormSubmit}
       >
-        <CalciteTextArea
+        <textarea
+          ref={queryRefCallback}
           name="query"
-          resize="none"
-          placeholder="Enter a query"
-          style={{ height: '66px' }}
+          rows={2}
           value={query}
-          onCalciteTextAreaInput={handleQueryInput}
+          className={styles.textarea}
+          onInput={handleQueryInput}
           onKeyDown={handleQueryKeyDown}
         />
         <CalciteButton
+          slot="footer-end"
           type="submit"
           iconStart="send"
-          scale="l"
+          scale="m"
           round
           appearance="transparent"
           disabled={!query || isChatFormLoading}
@@ -124,4 +155,4 @@ export function Chat(props: ChatProps) {
   );
 }
 
-export default Chat;
+export default Chatbot;

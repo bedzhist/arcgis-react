@@ -213,12 +213,14 @@ export function AddDataCard(props: AddDataCardProps) {
                     thumbnail={`https://www.arcgis.com/sharing/rest/community/users/${ownerUser.username}/info/${ownerUser.thumbnail}`}
                   />
                   <div>
-                    <div className="text-4 font-bold">{ownerUser.fullName}</div>
+                    <div className="text-md font-bold">
+                      {ownerUser.fullName}
+                    </div>
                     <div>Item managed by: {ownerUser.username}</div>
                   </div>
                 </div>
                 <div
-                  className="text-2 leading-relaxed overflow-auto pt-0 p-7"
+                  className="text-sm leading-relaxed overflow-auto pt-0 p-7"
                   style={{ maxHeight: '15.5rem' }}
                 >
                   {renderOwnerDescriptionContent(ownerUser.description)}

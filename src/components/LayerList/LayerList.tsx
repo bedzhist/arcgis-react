@@ -60,25 +60,25 @@ export function LayerList(props: LayerListProps) {
     if (!view) {
       return;
     }
-    layerListVM.current = new LayerListViewModel({
+    const newLayerListVM = new LayerListViewModel({
       listItemCreatedFunction: props.listItemCreatedFunction,
       view
     });
-    const currLayerListVM = layerListVM.current;
+    layerListVM.setValue(newLayerListVM);
     const stateHandle = reactiveUtils.when(
-      () => currLayerListVM.state === 'ready',
+      () => newLayerListVM.state === 'ready',
       () => {
-        setOperationalItems(currLayerListVM.operationalItems.clone());
+        setOperationalItems(newLayerListVM.operationalItems.clone());
       }
     );
     const watchHandle = reactiveUtils.watch(
       () =>
-        currLayerListVM.operationalItems
+        newLayerListVM.operationalItems
           .flatten((item) => item.children)
           .filter((item) => !!item.title)
           .toArray(),
       () => {
-        setOperationalItems(currLayerListVM.operationalItems.clone());
+        setOperationalItems(newLayerListVM.operationalItems.clone());
       }
     );
     return () => {
