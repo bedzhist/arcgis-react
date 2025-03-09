@@ -133,24 +133,27 @@ export function Chatbot(props: ChatbotProps) {
         className="d-flex items-center gap-3"
         onSubmit={handleChatFormSubmit}
       >
-        <textarea
-          ref={queryRefCallback}
-          name="query"
-          rows={2}
-          value={query}
-          className={styles.textarea}
-          onInput={handleQueryInput}
-          onKeyDown={handleQueryKeyDown}
-        />
-        <CalciteButton
-          slot="footer-end"
-          type="submit"
-          iconStart="send"
-          scale="m"
-          round
-          appearance="transparent"
-          disabled={!query || isChatFormLoading}
-        />
+        <label className={styles.label}>
+          <textarea
+            ref={queryRefCallback}
+            name="query"
+            rows={2}
+            value={query}
+            className={styles.textarea}
+            onInput={handleQueryInput}
+            onKeyDown={handleQueryKeyDown}
+          />
+          <CalciteButton
+            slot="footer-end"
+            type="submit"
+            iconStart="send"
+            scale="m"
+            round
+            appearance="transparent"
+            disabled={!query || isChatFormLoading}
+            className="absolute right-0 bottom-0 m-4"
+          />
+        </label>
       </form>
     </div>
   );
