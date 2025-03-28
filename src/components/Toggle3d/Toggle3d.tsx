@@ -18,8 +18,8 @@ export type Toggle3dWidget = __esri.Expand | __esri.LayerList;
 export interface Toggle3dProps {
   ref?: React.Ref<HTMLCalciteSegmentedControlElement>;
   view?: __esri.MapView | __esri.SceneView;
-  widgets: Toggle3dWidget[];
-  onViewToggle: (view: __esri.MapView | __esri.SceneView) => void;
+  widgets?: Toggle3dWidget[];
+  onViewToggle?: (view: __esri.MapView | __esri.SceneView) => void;
 }
 
 export function Toggle3d(props: Toggle3dProps) {
@@ -46,7 +46,8 @@ export function Toggle3d(props: Toggle3dProps) {
       map: view.map,
       viewpoint: view.viewpoint,
       ui: view.ui,
-      container: viewContainer
+      container: viewContainer,
+      popup: view.popup
     };
     if (value === Toggle3dValue['3D']) {
       newView = new SceneView(viewProps);
@@ -57,8 +58,11 @@ export function Toggle3d(props: Toggle3dProps) {
       console.error('Invalid view type');
       return;
     }
-    props.widgets.forEach((widget) => (widget.view = newView));
-    props.onViewToggle(newView);
+    if (view.popup) {
+      view.popup.view = newView;
+    }
+    props.widgets?.forEach((widget) => (widget.view = newView));
+    props.onViewToggle?.(newView);
   };
 
   useEffect(() => {
