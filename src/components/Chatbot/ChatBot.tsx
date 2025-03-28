@@ -1,6 +1,6 @@
 import { CalciteButton, CalciteLoader } from '@esri/calcite-components-react';
+import { useState } from 'react';
 import { v4 } from 'uuid';
-import { useRef, useState } from 'react';
 import styles from './Chatbot.module.scss';
 
 interface ChatbotMessage {
@@ -14,8 +14,6 @@ interface ChatbotProps {
 }
 
 export function Chatbot(props: ChatbotProps) {
-  const chatFormRef = useRef<HTMLFormElement>(null);
-
   const [messages, setMessages] = useState<ChatbotMessage[]>([]);
   const [query, setQuery] = useState<string>();
   const [isChatFormLoading, setIsChatFormLoading] = useState<boolean>(false);
@@ -90,8 +88,8 @@ export function Chatbot(props: ChatbotProps) {
   };
 
   return (
-    <div className="d-flex flex-column h-100 p-5">
-      <div className="h-100 mb-10">
+    <div className="d-flex flex-column h-100 p-5 gap-8 box-border">
+      <div className="h-100 overflow-y-auto overflow-x-hidden">
         {messages.map((message) =>
           message.role === 'user' ? (
             <div
@@ -114,7 +112,12 @@ export function Chatbot(props: ChatbotProps) {
               key={message.id}
               className="d-flex justify-start w-100 mb-7"
             >
-              <div className="py-2 px-5">{message.text}</div>
+              <div
+                className="py-2 px-5"
+                style={{ maxWidth: '240px', wordBreak: 'break-word' }}
+              >
+                {message.text}
+              </div>
             </div>
           )
         )}
@@ -126,7 +129,6 @@ export function Chatbot(props: ChatbotProps) {
         )}
       </div>
       <form
-        ref={chatFormRef}
         className="d-flex items-center gap-3"
         onSubmit={handleChatFormSubmit}
       >
