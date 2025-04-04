@@ -13,6 +13,10 @@ export default defineConfig({
           dest: '.'
         },
         {
+          src: 'node_modules/@arcgis/map-components/dist/arcgis-map-components/assets',
+          dest: '.'
+        },
+        {
           src: 'node_modules/@arcgis/core/assets/esri/themes',
           dest: '.'
         }
