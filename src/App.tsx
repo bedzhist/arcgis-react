@@ -1,35 +1,35 @@
-import {
-  CalciteShell,
-  CalciteShellPanel
-} from '@esri/calcite-components-react';
+import { EventHandler } from '@arcgis/lumina';
+import { useState } from 'react';
+import { FilterPanel } from './components';
 import { useThemeContext } from './contexts';
-import { Chatbot } from './components';
+import { ACCIDENTAL_DEATHS_MAP_ID } from './utils';
 
 export function App() {
   const themeContext = useThemeContext();
 
+  const [view, setView] = useState<__esri.MapView | __esri.SceneView>();
+
+  const handleArcgisViewReadyChange: EventHandler<
+    HTMLArcgisMapElement['arcgisViewReadyChange']
+  > = (event) => {
+    setView(event.target.view);
+  };
+
   return (
-    <CalciteShell>
-      <CalciteShellPanel
+    <calcite-shell>
+      <calcite-shell-panel
         slot="panel-start"
+        position="start"
         layout="vertical"
-        resizable
       >
-        <Chatbot
-          queryAction={async (query: string) => {
-            // Simulate a query action
-            return new Promise((resolve) => {
-              setTimeout(() => {
-                resolve(`Response to: ${query}`);
-              }, 1000);
-            });
-          }}
-        />
-      </CalciteShellPanel>
+        <FilterPanel view={view} />
+      </calcite-shell-panel>
       <arcgis-map
+        itemId={ACCIDENTAL_DEATHS_MAP_ID}
         basemap={themeContext?.darkMode ? 'dark-gray-vector' : 'gray-vector'}
+        onarcgisViewReadyChange={handleArcgisViewReadyChange}
       />
-    </CalciteShell>
+    </calcite-shell>
   );
 }
 

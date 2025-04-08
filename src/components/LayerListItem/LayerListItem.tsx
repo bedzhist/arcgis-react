@@ -1,12 +1,6 @@
 import * as reactiveUtils from '@arcgis/core/core/reactiveUtils';
 import Widget from '@arcgis/core/widgets/Widget';
-import { CalciteListItemCustomEvent } from '@esri/calcite-components';
-import {
-  CalciteAction,
-  CalciteActionGroup,
-  CalciteActionMenu,
-  CalciteListItem
-} from '@esri/calcite-components-react';
+import { TargetedEvent } from '@esri/calcite-components';
 import { useEffect, useState } from 'react';
 
 export interface LayerListItemProps {
@@ -52,7 +46,9 @@ export function LayerListItem(props: LayerListItemProps) {
     item.visible = newVisible;
     props.onVisibilityClick?.(event, newVisible, item);
   };
-  const handleSelect = (event: CalciteListItemCustomEvent<void>) => {
+  const handleSelect = (
+    event: TargetedEvent<HTMLCalciteListItemElement, undefined>
+  ) => {
     event.stopPropagation();
     const item = props.item;
     item.visible = !item.visible;
@@ -72,7 +68,7 @@ export function LayerListItem(props: LayerListItemProps) {
         const action = actionsSection.getItemAt(0);
         if (!action || !action.id) return null;
         return (
-          <CalciteAction
+          <calcite-action
             slot="actions-end"
             icon={action.icon ?? 'ellipsis'}
             text={action.title ?? 'Actions'}
@@ -86,34 +82,34 @@ export function LayerListItem(props: LayerListItemProps) {
       }
     }
     return (
-      <CalciteActionMenu
+      <calcite-action-menu
         label="Actions"
         slot="actions-end"
-        overlayPositioning="fixed"
+        overlay-positioning="fixed"
         placement="bottom-end"
         scale="s"
       >
         {actions.map((actionsSection, i) => (
-          <CalciteActionGroup key={i}>
+          <calcite-action-group key={i}>
             {actionsSection.map((action, i) => {
               if (!action.id) {
                 return null;
               }
               return (
-                <CalciteAction
+                <calcite-action
                   key={i}
                   icon={action.icon ?? 'ellipsis'}
                   text={action.title ?? 'Action'}
-                  textEnabled
+                  text-enabled
                   scale="s"
                   active={toggledActions.includes(action.id)}
                   onClick={() => toggleAction(action)}
                 />
               );
             })}
-          </CalciteActionGroup>
+          </calcite-action-group>
         ))}
-      </CalciteActionMenu>
+      </calcite-action-menu>
     );
   };
   const renderPanel = () => {
@@ -125,7 +121,7 @@ export function LayerListItem(props: LayerListItemProps) {
     }
     return (
       <>
-        <CalciteAction
+        <calcite-action
           slot="actions-end"
           icon={panel.icon ?? 'ellipsis'}
           text={panel.title}
@@ -191,13 +187,13 @@ export function LayerListItem(props: LayerListItemProps) {
   }, [props.item]);
 
   return (
-    <CalciteListItem
+    <calcite-list-item
       title={props.item.title}
       className="esri-layer-list__item"
       value={props.item.title}
-      onCalciteListItemSelect={handleSelect}
+      oncalciteListItemSelect={handleSelect}
     >
-      <CalciteAction
+      <calcite-action
         slot="actions-start"
         icon={visible ? 'check-square-f' : 'square'}
         text="Visibility"
@@ -214,7 +210,7 @@ export function LayerListItem(props: LayerListItemProps) {
       {props.children}
       {renderPanel()}
       {renderActions()}
-    </CalciteListItem>
+    </calcite-list-item>
   );
 }
 

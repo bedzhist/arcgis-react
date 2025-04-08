@@ -1,16 +1,6 @@
 import { CalciteSelectCustomEvent } from '@esri/calcite-components';
-import {
-  CalciteButton,
-  CalciteFab,
-  CalciteLabel,
-  CalciteNotice,
-  CalciteOption,
-  CalcitePanel,
-  CalciteScrim,
-  CalciteSelect
-} from '@esri/calcite-components-react';
-import { v4 } from 'uuid';
 import { createRef, useMemo, useState } from 'react';
+import { v4 } from 'uuid';
 import { ArcGISLayer } from '../../types';
 import { toUTCDateString } from '../../utils';
 import CalciteLayerListCombobox, {
@@ -369,7 +359,7 @@ export function FilterPanel(props: FilterPanelProps) {
   };
 
   return (
-    <CalcitePanel
+    <calcite-panel
       heading="Filter"
       overlayPositioning="absolute"
     >
@@ -377,19 +367,19 @@ export function FilterPanel(props: FilterPanelProps) {
         slot="content-top"
         className="w-100 p-3"
       >
-        <CalciteNotice
+        <calcite-notice
           open
           hidden={!isNoticeOpen}
           className="mb-7"
           icon="filter"
           closable
-          onCalciteNoticeClose={handleNoticeClose}
+          oncalciteNoticeClose={handleNoticeClose}
         >
           <div slot="message">
             Add a filter by selecting a layer from the list.
           </div>
-        </CalciteNotice>
-        <CalciteLabel>
+        </calcite-notice>
+        <calcite-label>
           Layer
           <CalciteLayerListCombobox
             view={props.view}
@@ -399,23 +389,23 @@ export function FilterPanel(props: FilterPanelProps) {
             onCalciteLayerListComboboxChange={handleLayerChange}
             overlayPositioning="fixed"
           />
-        </CalciteLabel>
-        <CalciteLabel>
+        </calcite-label>
+        <calcite-label>
           Filter results
-          <CalciteSelect
+          <calcite-select
             label="Logical operator"
             value={logicalOperator}
-            onCalciteSelectChange={handleLogicalOperatorChange}
+            oncalciteSelectChange={handleLogicalOperatorChange}
           >
-            <CalciteOption value={FilterPanelLogicalOperator.AND}>
+            <calcite-option value={FilterPanelLogicalOperator.AND}>
               Match all expressions
-            </CalciteOption>
-            <CalciteOption value={FilterPanelLogicalOperator.OR}>
+            </calcite-option>
+            <calcite-option value={FilterPanelLogicalOperator.OR}>
               Match at least one expression
-            </CalciteOption>
-          </CalciteSelect>
-        </CalciteLabel>
-        <CalciteButton
+            </calcite-option>
+          </calcite-select>
+        </calcite-label>
+        <calcite-button
           width="full"
           appearance="outline"
           kind="danger"
@@ -425,7 +415,7 @@ export function FilterPanel(props: FilterPanelProps) {
           disabled={!expressions.length}
         >
           Remove all expressions
-        </CalciteButton>
+        </calcite-button>
       </div>
       {expressions.map((expression) => (
         <FilterPanelExpression
@@ -436,7 +426,7 @@ export function FilterPanel(props: FilterPanelProps) {
           onDelete={handleExpressionDelete}
         />
       ))}
-      <CalciteFab
+      <calcite-fab
         slot="fab"
         appearance="outline-fill"
         hidden={!layerItem}
@@ -444,28 +434,28 @@ export function FilterPanel(props: FilterPanelProps) {
         text="Add expression"
         onClick={handleAddExpressionClick}
       />
-      <CalciteScrim hidden={!isRemoveScrimOpen}>
+      <calcite-scrim hidden={!isRemoveScrimOpen}>
         <div className="bottom-0 left-0 right-0 p-3 bg-1">
           <b>Remove all expressions</b>
           <p>Are you sure? All expressions will be removed.</p>
           <div className="d-flex">
-            <CalciteButton
+            <calcite-button
               width="full"
               appearance="outline"
               onClick={handleRemoveAllCancelClick}
             >
               Cancel
-            </CalciteButton>
-            <CalciteButton
+            </calcite-button>
+            <calcite-button
               width="full"
               onClick={handleRemoveAllConfirmClick}
             >
               Ok
-            </CalciteButton>
+            </calcite-button>
           </div>
         </div>
-      </CalciteScrim>
-    </CalcitePanel>
+      </calcite-scrim>
+    </calcite-panel>
   );
 }
 

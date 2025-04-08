@@ -14,21 +14,6 @@ import {
   CalciteInputCustomEvent,
   CalcitePaginationCustomEvent
 } from '@esri/calcite-components';
-import {
-  CalciteButton,
-  CalciteCardGroup,
-  CalciteDropdown,
-  CalciteDropdownGroup,
-  CalciteDropdownItem,
-  CalciteInput,
-  CalciteLabel,
-  CalcitePagination,
-  CalciteProgress,
-  CalciteTab,
-  CalciteTabNav,
-  CalciteTabs,
-  CalciteTabTitle
-} from '@esri/calcite-components-react';
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { useValue } from '../../hooks';
 import AddDataCard, { ResultItem } from '../AddDataCard';
@@ -926,19 +911,19 @@ export function AddData(props: AddDataProps) {
   }, []);
 
   return (
-    <CalciteTabs
+    <calcite-tabs
       layout="center"
       className="h-100"
     >
-      <CalciteTabNav slot="title-group">
-        <CalciteTabTitle>Portal</CalciteTabTitle>
-        <CalciteTabTitle>File</CalciteTabTitle>
-        <CalciteTabTitle>URL</CalciteTabTitle>
-      </CalciteTabNav>
-      <CalciteTab>
+      <calcite-tab-nav slot="title-group">
+        <calcite-tab-title>Portal</calcite-tab-title>
+        <calcite-tab-title>File</calcite-tab-title>
+        <calcite-tab-title>URL</calcite-tab-title>
+      </calcite-tab-nav>
+      <calcite-tab>
         <div className="d-flex flex-column h-100">
           <div className="d-flex justify-center py-4">
-            <CalciteDropdown
+            <calcite-dropdown
               maxItems={0}
               overlayPositioning="absolute"
               placement="bottom-start"
@@ -946,7 +931,7 @@ export function AddData(props: AddDataProps) {
               width-scale="m"
               scale="m"
             >
-              <CalciteButton
+              <calcite-button
                 iconEnd="chevron-down"
                 slot="trigger"
                 alignment="center"
@@ -957,40 +942,40 @@ export function AddData(props: AddDataProps) {
                 width="auto"
               >
                 {getResultsSource(resultsSource)}
-              </CalciteButton>
-              <CalciteDropdownGroup>
-                <CalciteDropdownItem
+              </calcite-button>
+              <calcite-dropdown-group>
+                <calcite-dropdown-item
                   selected={resultsSource === ResultsSource.LIVING_ATLAS}
-                  onCalciteDropdownItemSelect={() =>
+                  oncalciteDropdownItemSelect={() =>
                     selectResultsSource(ResultsSource.LIVING_ATLAS)
                   }
                 >
                   {getResultsSource(ResultsSource.LIVING_ATLAS)}
-                </CalciteDropdownItem>
-                <CalciteDropdownItem
+                </calcite-dropdown-item>
+                <calcite-dropdown-item
                   selected={resultsSource === ResultsSource.ARCGIS_ONLINE}
-                  onCalciteDropdownItemSelect={() =>
+                  oncalciteDropdownItemSelect={() =>
                     selectResultsSource(ResultsSource.ARCGIS_ONLINE)
                   }
                 >
                   {getResultsSource(ResultsSource.ARCGIS_ONLINE)}
-                </CalciteDropdownItem>
-              </CalciteDropdownGroup>
-            </CalciteDropdown>
+                </calcite-dropdown-item>
+              </calcite-dropdown-group>
+            </calcite-dropdown>
           </div>
-          <CalciteInput
+          <calcite-input
             type="search"
             placeholder="Search"
             icon="search"
             className="p-3"
             value={resultsSearchValue}
-            onCalciteInputInput={handleSearchResultsInput}
+            oncalciteInputInput={handleSearchResultsInput}
           />
-          <CalciteProgress
+          <calcite-progress
             type="indeterminate"
             hidden={!isResultsQueryLoading}
           />
-          <CalciteCardGroup
+          <calcite-card-group
             label="Content Items"
             className="overflow-auto h-100 mb-3"
           >
@@ -1001,22 +986,22 @@ export function AddData(props: AddDataProps) {
                 onAdd={addLayerFromPortalClick}
               />
             ))}
-          </CalciteCardGroup>
-          <CalcitePagination
+          </calcite-card-group>
+          <calcite-pagination
             pageSize={RESULTS_PAGE_SIZE}
             startItem={resultsStart}
             totalItems={resultsTotal}
             className="justify-center py-3 border-t-1 border-color-1"
-            onCalcitePaginationChange={handleResultsPaginationChange}
+            oncalcitePaginationChange={handleResultsPaginationChange}
           />
         </div>
-      </CalciteTab>
-      <CalciteTab>
+      </calcite-tab>
+      <calcite-tab>
         <form
           className="p-7"
           action={fileFormAction}
         >
-          <CalciteLabel>
+          <calcite-label>
             Select File
             {/*
               // TODO: Replace this with CalciteInput when the bug has been fixed
@@ -1034,41 +1019,41 @@ export function AddData(props: AddDataProps) {
                 blockSize: '2rem'
               }}
             />
-          </CalciteLabel>
-          <CalciteButton
+          </calcite-label>
+          <calcite-button
             type="submit"
             disabled={isFileFormLoading}
             width="full"
             loading={isFileFormLoading}
           >
             Add Layer
-          </CalciteButton>
+          </calcite-button>
         </form>
-      </CalciteTab>
-      <CalciteTab>
+      </calcite-tab>
+      <calcite-tab>
         <form
           className="p-7"
           action={urlFormAction}
         >
-          <CalciteLabel>
+          <calcite-label>
             Enter URL
-            <CalciteInput
+            <calcite-input
               type="url"
               required
               name="url"
             />
-          </CalciteLabel>
-          <CalciteButton
+          </calcite-label>
+          <calcite-button
             type="submit"
             disabled={isUrlFormLoading}
             width="full"
             loading={isUrlFormLoading}
           >
             Add Layer
-          </CalciteButton>
+          </calcite-button>
         </form>
-      </CalciteTab>
-    </CalciteTabs>
+      </calcite-tab>
+    </calcite-tabs>
   );
 }
 

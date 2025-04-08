@@ -1,4 +1,3 @@
-import { CalciteButton, CalciteLoader } from '@esri/calcite-components-react';
 import { useState } from 'react';
 import { v4 } from 'uuid';
 import styles from './Chatbot.module.scss';
@@ -123,7 +122,10 @@ export function Chatbot(props: ChatbotProps) {
         )}
         {isChatFormLoading && (
           <div className="d-flex justify-start w-100 mb-5 items-center">
-            <CalciteLoader inline />
+            <calcite-loader
+              inline
+              label="Thinking..."
+            />
             <span className="py-2 px-5">Thinking...</span>
           </div>
         )}
@@ -142,7 +144,7 @@ export function Chatbot(props: ChatbotProps) {
             onInput={handleQueryInput}
             onKeyDown={handleQueryKeyDown}
           />
-          <CalciteButton
+          <calcite-button
             slot="footer-end"
             type="submit"
             iconStart="send"

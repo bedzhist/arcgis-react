@@ -1,11 +1,3 @@
-import {
-  CalciteCard,
-  CalciteButton,
-  CalcitePopover,
-  CalciteAvatar,
-  CalciteLink,
-  CalciteLoader
-} from '@esri/calcite-components-react';
 import esriConfig from '@arcgis/core/config';
 import { useState } from 'react';
 import esriRequest from '@arcgis/core/request';
@@ -124,14 +116,14 @@ export function AddDataCard(props: AddDataCardProps) {
         return part.split(/(https?:\/\/[^\s]+)/g).map((segment, i) => {
           if (/https?:\/\/[^\s]+/.test(segment)) {
             return (
-              <CalciteLink
+              <calcite-link
                 key={`link-${index}-${i}`}
                 href={segment}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 {segment}
-              </CalciteLink>
+              </calcite-link>
             );
           }
           return segment;
@@ -142,7 +134,7 @@ export function AddDataCard(props: AddDataCardProps) {
   };
 
   return (
-    <CalciteCard
+    <calcite-card
       key={props.item.id}
       thumbnailPosition="inline-end"
       className="w-100"
@@ -192,7 +184,7 @@ export function AddDataCard(props: AddDataCardProps) {
         >
           {props.item.owner}
         </span>
-        <CalcitePopover
+        <calcite-popover
           label={props.item.owner}
           referenceElement={ownerRef || ''}
           autoClose
@@ -200,14 +192,14 @@ export function AddDataCard(props: AddDataCardProps) {
           placement="bottom"
           offsetSkidding={16}
           offsetDistance={16}
-          onCalcitePopoverOpen={handleOwnerPopoverOpen}
+          oncalcitePopoverBeforeOpen={handleOwnerPopoverOpen}
         >
           <div style={{ width: '300px' }}>
-            {isOwnerLoading && !ownerUser && <CalciteLoader label="" />}
+            {isOwnerLoading && !ownerUser && <calcite-loader label="" />}
             {ownerUser && (
               <>
                 <div className="d-flex items-center gap-5 p-7">
-                  <CalciteAvatar
+                  <calcite-avatar
                     className="flex-none"
                     scale="m"
                     thumbnail={`https://www.arcgis.com/sharing/rest/community/users/${ownerUser.username}/info/${ownerUser.thumbnail}`}
@@ -228,9 +220,9 @@ export function AddDataCard(props: AddDataCardProps) {
               </>
             )}
           </div>
-        </CalcitePopover>
+        </calcite-popover>
       </div>
-      <CalciteButton
+      <calcite-button
         slot="footer-end"
         iconStart="plus"
         appearance="outline"
@@ -239,8 +231,8 @@ export function AddDataCard(props: AddDataCardProps) {
         onClick={handleAddClick}
       >
         Add
-      </CalciteButton>
-    </CalciteCard>
+      </calcite-button>
+    </calcite-card>
   );
 }
 

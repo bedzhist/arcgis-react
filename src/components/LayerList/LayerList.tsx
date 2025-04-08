@@ -1,6 +1,5 @@
 import * as reactiveUtils from '@arcgis/core/core/reactiveUtils';
 import LayerListViewModel from '@arcgis/core/widgets/LayerList/LayerListViewModel';
-import { CalciteList, CalciteNotice } from '@esri/calcite-components-react';
 import { useEffect, useState } from 'react';
 import { useValue } from '../../hooks';
 import LayerListItem from '../LayerListItem';
@@ -48,7 +47,7 @@ export function LayerList(props: LayerListProps) {
           onVisibilityClick={handleItemVisibilityClick}
         >
           {item.children.length > 0 && (
-            <CalciteList>{renderItems(item.children)}</CalciteList>
+            <calcite-list label="">{renderItems(item.children)}</calcite-list>
           )}
         </LayerListItem>
       );
@@ -91,18 +90,21 @@ export function LayerList(props: LayerListProps) {
     <div ref={props.ref}>
       {operationalItems &&
         (operationalItems.length > 0 ? (
-          <CalciteList filterEnabled>
+          <calcite-list
+            filter-enabled
+            label=""
+          >
             {renderItems(operationalItems)}
-          </CalciteList>
+          </calcite-list>
         ) : (
           <div className="m-5">
-            <CalciteNotice
+            <calcite-notice
               open
               icon="information"
               kind="info"
             >
               <div slot="message">There are currently no items to display.</div>
-            </CalciteNotice>
+            </calcite-notice>
           </div>
         ))}
     </div>

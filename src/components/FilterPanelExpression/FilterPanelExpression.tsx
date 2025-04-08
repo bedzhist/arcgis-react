@@ -7,22 +7,6 @@ import {
   CalciteListCustomEvent,
   CalciteSelectCustomEvent
 } from '@esri/calcite-components';
-import {
-  CalciteAction,
-  CalciteBlock,
-  CalciteButton,
-  CalciteCombobox,
-  CalciteComboboxItem,
-  CalciteDropdown,
-  CalciteInput,
-  CalciteInputDatePicker,
-  CalciteInputTimePicker,
-  CalciteList,
-  CalciteListItem,
-  CalciteOption,
-  CalcitePopover,
-  CalciteSelect
-} from '@esri/calcite-components-react';
 import { useCallback, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { toUTCDateString } from '../../utils';
@@ -61,7 +45,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
     setExceededUniqueValuesTransferLimit
   ] = useState<boolean>(false);
 
-  const filterPanelOpearators = useMemo<FilterPanelOperatorItem[]>(() => {
+  const filterPanelOperators = useMemo<FilterPanelOperatorItem[]>(() => {
     return [
       { value: FilterOperator.IS, text: 'is' },
       { value: FilterOperator.IS_NOT, text: 'is not' },
@@ -310,7 +294,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
     ) {
       return (
         <>
-          <CalciteButton
+          <calcite-button
             ref={setSelectValuesButtonRef}
             appearance="transparent"
             width="full"
@@ -319,30 +303,31 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
             onClick={handleValuesOpenClick}
           >
             Select values
-          </CalciteButton>
+          </calcite-button>
           {uniqueValuePopoverOpen &&
             ReactDOM.createPortal(
-              <CalcitePopover
+              <calcite-popover
                 label="Select values"
                 referenceElement={selectValuesButtonRef || ''}
                 placement="right-start"
               >
                 <div style={{ width: '280px' }}>
-                  <CalciteInput
+                  <calcite-input
                     type="search"
                     className="m-5"
                     icon="search"
-                    onCalciteInputInput={handleUniqueValuesFilterInput}
+                    oncalciteInputInput={handleUniqueValuesFilterInput}
                   />
-                  <CalciteList
+                  <calcite-list
+                    label="Unique values"
                     selectionMode="multiple"
-                    onCalciteListChange={handleValuesChange}
+                    oncalciteListChange={handleValuesChange}
                     className="overflow-y-auto"
                     scale="s"
                     style={{ maxHeight: '240px' }}
                   >
                     {uniqueValueOptions.map((option) => (
-                      <CalciteListItem
+                      <calcite-list-item
                         key={option.value}
                         label={option.label}
                         value={option.value}
@@ -356,47 +341,48 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
                         >
                           {option.count}
                         </div>
-                      </CalciteListItem>
+                      </calcite-list-item>
                     ))}
-                  </CalciteList>
+                  </calcite-list>
                   {exceededUniqueValuesTransferLimit && (
                     <div className="m-4 text-sm">
                       Too many values to display.
                     </div>
                   )}
                   <div className="p-3">
-                    <CalciteButton
+                    <calcite-button
                       width="full"
                       scale="s"
                       onClick={handleValuesDoneClick}
                     >
                       Done
-                    </CalciteButton>
+                    </calcite-button>
                   </div>
                 </div>
-              </CalcitePopover>,
+              </calcite-popover>,
               document.body
             )}
-          <CalciteList
+          <calcite-list
             selectionMode="none"
             scale="s"
+            label="Selected values"
           >
             {props.expression.values.map((value) => (
-              <CalciteListItem
+              <calcite-list-item
                 key={value}
                 label={value}
                 value={value}
               >
-                <CalciteAction
+                <calcite-action
                   slot="actions-end"
                   icon="x"
                   text=""
                   scale="s"
                   onClick={() => removeValuesItem(value)}
                 />
-              </CalciteListItem>
+              </calcite-list-item>
             ))}
-          </CalciteList>
+          </calcite-list>
         </>
       );
     }
@@ -410,18 +396,18 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
     ) {
       return (
         <div className="d-flex mb-4">
-          <CalciteInputDatePicker
+          <calcite-input-date-picker
             scale="s"
             value={props.expression.values[0]}
             className="flex-1"
-            onCalciteInputDatePickerChange={handleDateValueChange}
+            oncalciteInputDatePickerChange={handleDateValueChange}
           />
-          <CalciteInputTimePicker
+          <calcite-input-time-picker
             scale="s"
             value={props.expression.values[1]}
             step={1}
             className="flex-1"
-            onCalciteInputTimePickerChange={handleTimeValueChange}
+            oncalciteInputTimePickerChange={handleTimeValueChange}
           />
         </div>
       );
@@ -433,41 +419,41 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       props.expression.operator !== FilterOperator.IS_NOT_EMPTY_STRING
     ) {
       return (
-        <CalciteInput
+        <calcite-input
           label="Value"
           scale="s"
           className="mb-4"
           type={getInputType(props.expression.field)}
           value={props.expression.value}
-          onCalciteInputInput={handleValueInput}
+          oncalciteInputInput={handleValueInput}
         />
       );
     }
   };
 
   return (
-    <CalciteBlock
+    <calcite-block
       heading="Expression"
       open
     >
-      <CalciteDropdown
+      <calcite-dropdown
         slot="control"
         overlayPositioning="fixed"
         placement="bottom-end"
       >
-        <CalciteAction
+        <calcite-action
           slot="trigger"
           icon="ellipsis"
           text=""
         />
-        <CalciteAction
+        <calcite-action
           text="Delete"
           icon="trash"
           textEnabled
           onClick={handleDeleteClick}
         />
-      </CalciteDropdown>
-      <CalciteCombobox
+      </calcite-dropdown>
+      <calcite-combobox
         label="Field"
         selectionMode="single-persist"
         scale="s"
@@ -475,10 +461,10 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
         clearDisabled
         ref={props.expression.fieldRef}
         value={props.expression.field.name}
-        onCalciteComboboxChange={handleFieldChange}
+        oncalciteComboboxChange={handleFieldChange}
       >
         {props.layer?.fields.map((field) => (
-          <CalciteComboboxItem
+          <calcite-combobox-item
             key={field.name}
             value={field.name}
             heading={field.alias ?? ''}
@@ -486,29 +472,29 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
             icon={getFieldIcon(field)}
           />
         ))}
-      </CalciteCombobox>
-      <CalciteSelect
+      </calcite-combobox>
+      <calcite-select
         label="Operator"
         scale="s"
         className="mb-4"
         value={props.expression.operator}
-        onCalciteSelectChange={handleOperatorChange}
+        oncalciteSelectChange={handleOperatorChange}
       >
-        {filterPanelOpearators
+        {filterPanelOperators
           .filter((operator) =>
             getOperators(props.expression.field).includes(operator.value)
           )
           .map((operator) => (
-            <CalciteOption
+            <calcite-option
               key={operator.value}
               value={operator.value}
             >
               {operator.text}
-            </CalciteOption>
+            </calcite-option>
           ))}
-      </CalciteSelect>
+      </calcite-select>
       {renderValueSelector()}
-    </CalciteBlock>
+    </calcite-block>
   );
 }
 

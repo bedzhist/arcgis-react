@@ -1,12 +1,8 @@
 import MapView from '@arcgis/core/views/MapView';
 import SceneView from '@arcgis/core/views/SceneView';
-import { CalciteSegmentedControlCustomEvent } from '@esri/calcite-components';
-import {
-  CalciteSegmentedControl,
-  CalciteSegmentedControlItem
-} from '@esri/calcite-components-react';
 import { useEffect, useState } from 'react';
 import { useAlertContext } from '../../contexts/AlertContext';
+import { TargetedEvent } from '@esri/calcite-components';
 
 enum Toggle3dValue {
   '2D' = '2d',
@@ -27,7 +23,9 @@ export function Toggle3d(props: Toggle3dProps) {
 
   const [value, setValue] = useState<Toggle3dValue>();
 
-  const handleChange = (event: CalciteSegmentedControlCustomEvent<void>) => {
+  const handleChange = (
+    event: TargetedEvent<HTMLCalciteSegmentedControlElement, undefined>
+  ) => {
     const view = props.view;
     if (!view) {
       alertContext?.showDefaultErrorAlert();
@@ -41,7 +39,7 @@ export function Toggle3d(props: Toggle3dProps) {
       return;
     }
     let newView: __esri.MapView | __esri.SceneView;
-    const value = event.target.value;
+    const value = (event.target as HTMLCalciteSegmentedControlElement).value;
     const viewProps = {
       map: view.map,
       viewpoint: view.viewpoint,
@@ -81,23 +79,23 @@ export function Toggle3d(props: Toggle3dProps) {
   }, [props.view]);
 
   return (
-    <CalciteSegmentedControl
-      onCalciteSegmentedControlChange={handleChange}
+    <calcite-segmented-control
+      oncalciteSegmentedControlChange={handleChange}
       ref={props.ref}
     >
-      <CalciteSegmentedControlItem
+      <calcite-segmented-control-item
         value={Toggle3dValue['2D']}
         checked={value === Toggle3dValue['2D']}
       >
         2D
-      </CalciteSegmentedControlItem>
-      <CalciteSegmentedControlItem
+      </calcite-segmented-control-item>
+      <calcite-segmented-control-item
         value={Toggle3dValue['3D']}
         checked={value === Toggle3dValue['3D']}
       >
         3D
-      </CalciteSegmentedControlItem>
-    </CalciteSegmentedControl>
+      </calcite-segmented-control-item>
+    </calcite-segmented-control>
   );
 }
 

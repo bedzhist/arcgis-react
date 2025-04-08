@@ -1,16 +1,14 @@
 import * as reactiveUtils from '@arcgis/core/core/reactiveUtils';
 import LayerListViewModel from '@arcgis/core/widgets/LayerList/LayerListViewModel';
-import { CalciteComboboxCustomEvent } from '@esri/calcite-components';
 import {
-  CalciteCombobox,
-  CalciteComboboxItem,
-  CalciteComboboxItemGroup
-} from '@esri/calcite-components-react';
-import { EventName } from '@lit/react';
+  CalciteComboboxCustomEvent,
+  TargetedEvent
+} from '@esri/calcite-components';
+import { ReactCalciteCombobox } from '@esri/calcite-components/types/react';
 import { useEffect, useMemo, useState } from 'react';
 import { v4 } from 'uuid';
 import { useValue } from '../../hooks';
-import { ArcGISLayer, ComponentProps } from '../../types';
+import { ArcGISLayer } from '../../types';
 
 export interface CalciteLayerListComboboxItem {
   id: string;
@@ -23,36 +21,8 @@ export type CalciteLayerListComboboxChangeItem =
   | CalciteLayerListComboboxItem
   | CalciteLayerListComboboxItem[]
   | null;
-
-type CalciteComboboxProps = ComponentProps<
-  HTMLCalciteComboboxElement,
-  {
-    onCalciteComboboxBeforeClose: EventName<
-      HTMLCalciteComboboxElement['calciteComboboxBeforeClose']
-    >;
-    onCalciteComboboxBeforeOpen: EventName<
-      HTMLCalciteComboboxElement['calciteComboboxBeforeOpen']
-    >;
-    onCalciteComboboxChange: EventName<
-      HTMLCalciteComboboxElement['calciteComboboxChange']
-    >;
-    onCalciteComboboxChipClose: EventName<
-      HTMLCalciteComboboxElement['calciteComboboxChipClose']
-    >;
-    onCalciteComboboxClose: EventName<
-      HTMLCalciteComboboxElement['calciteComboboxClose']
-    >;
-    onCalciteComboboxFilterChange: EventName<
-      HTMLCalciteComboboxElement['calciteComboboxFilterChange']
-    >;
-    onCalciteComboboxOpen: EventName<
-      HTMLCalciteComboboxElement['calciteComboboxOpen']
-    >;
-  }
->;
-
 export interface CalciteLayerListComboboxProps
-  extends Omit<CalciteComboboxProps, 'children'> {
+  extends Omit<ReactCalciteCombobox, 'children'> {
   view?: __esri.MapView | __esri.SceneView;
   layerTypes?: ArcGISLayer['type'][];
   onCalciteLayerListComboboxChange?: (
@@ -93,16 +63,16 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
         const children = item.children;
         if (children.length > 0) {
           return (
-            <CalciteComboboxItemGroup
+            <calcite-combobox-item-group
               key={id}
               label={item.layer.title ?? ''}
             >
               {renderItems(children, level + 1)}
-            </CalciteComboboxItemGroup>
+            </calcite-combobox-item-group>
           );
         }
         return (
-          <CalciteComboboxItem
+          <calcite-combobox-item
             key={id}
             value={id}
             heading={item.layer.title ?? ''}
@@ -115,10 +85,10 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
   }, [items, props.value]);
 
   const handleCalciteComboboxChange = (
-    event: CalciteComboboxCustomEvent<undefined>
+    event: TargetedEvent<HTMLCalciteComboboxElement, undefined>
   ) => {
     if (!items) return;
-    props.onCalciteComboboxChange?.(event);
+    props.oncalciteComboboxChange?.(event);
     const newValue = event.target.value;
     if (typeof newValue === 'string') {
       const item = items
@@ -209,12 +179,12 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
     };
   }, [mapView, layerTypes, onCalciteLayerListComboboxUpdate, layerListVM]);
   return (
-    <CalciteCombobox
+    <calcite-combobox
       {...restProps}
-      onCalciteComboboxChange={handleCalciteComboboxChange}
+      oncalciteComboboxChange={handleCalciteComboboxChange}
     >
       {comboboxItems}
-    </CalciteCombobox>
+    </calcite-combobox>
   );
 }
 
