@@ -44,6 +44,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
     exceededUniqueValuesTransferLimit,
     setExceededUniqueValuesTransferLimit
   ] = useState<boolean>(false);
+  const [isDisabled, setIsDisabled] = useState<boolean>(false);
 
   const filterPanelOperators = useMemo<FilterPanelOperatorItem[]>(() => {
     return [
@@ -196,7 +197,9 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       operator === FilterOperator.DATE_INCLUDES ||
       operator === FilterOperator.DATE_EXCLUDES
     ) {
+      setIsDisabled(true);
       await updateUniqueValues('1=1');
+      setIsDisabled(false);
     }
     props.onExpressionChange(expression);
   };
@@ -435,6 +438,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
     <calcite-block
       heading="Expression"
       open
+      disabled={isDisabled}
     >
       <calcite-dropdown
         slot="control"
