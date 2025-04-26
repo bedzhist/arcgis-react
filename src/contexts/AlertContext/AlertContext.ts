@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-export interface Alert {
+export interface AlertData {
   id: string;
   title: string;
   message: string;
@@ -9,10 +9,10 @@ export interface Alert {
   autoClose?: boolean;
 }
 
-export type AlertProps = Omit<Alert, 'id'>;
+export type AlertProps = Omit<AlertData, 'id'>;
 
 export interface AlertContextStore {
-  setAlert: (alert: Alert | null) => void;
+  hideAlert: () => void;
   showErrorAlert: (errorAlert: Omit<AlertProps, 'kind'>) => void;
   showSuccessAlert: (successAlert: Omit<AlertProps, 'kind'>) => void;
   showInfoAlert: (infoAlert: Omit<AlertProps, 'kind'>) => void;

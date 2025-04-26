@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { v4 } from 'uuid';
-import { Alert, AlertProps } from '../../contexts/AlertContext';
+import { AlertData, AlertProps } from '../../contexts/AlertContext';
 
 export const useAlert = () => {
-  const [alert, setAlert] = useState<Alert | null>(null);
+  const [alert, setAlert] = useState<AlertData | null>(null);
 
   const showErrorAlert = (errorAlert: Omit<AlertProps, 'kind'>) =>
     setAlert({ ...errorAlert, kind: 'danger', id: v4() });
@@ -22,8 +22,10 @@ export const useAlert = () => {
       icon: 'exclamation-mark-triangle',
       kind: 'danger'
     });
+  const hideAlert = () => setAlert(null);
+
   const alertMethods = {
-    setAlert,
+    hideAlert,
     showErrorAlert,
     showSuccessAlert,
     showInfoAlert,
