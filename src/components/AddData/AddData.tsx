@@ -977,7 +977,7 @@ export function AddData(props: AddDataProps) {
           />
           <calcite-card-group
             label="Content Items"
-            className="overflow-auto h-100 mb-3"
+            className="overflow-auto h-100 mb-3 px-3"
           >
             {resultItems?.map((resultItem) => (
               <AddDataCard
