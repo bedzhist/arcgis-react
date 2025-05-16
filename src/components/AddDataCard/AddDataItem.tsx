@@ -137,20 +137,17 @@ export function AddDataCard(props: AddDataCardProps) {
     <calcite-card
       key={props.item.id}
       thumbnailPosition="inline-end"
-      className="w-100"
+      className="w-full"
     >
       <div
         slot="thumbnail"
-        className="w-100"
+        className="w-full"
       >
-        <div
-          className="ms-auto bg-2"
-          style={{ width: '120px', height: '80px' }}
-        >
+        <div className="ml-auto h-[5rem] w-[7.5rem] bg-foreground-2">
           <img
             slot="thumbnail"
             alt="Sample image alt"
-            className="w-100 object-fit-cover"
+            className="w-full object-cover"
             src={
               props.item.thumbnail
                 ? `${esriConfig.portalUrl}/sharing/rest/content/items/${props.item.id}/info/${
@@ -164,7 +161,7 @@ export function AddDataCard(props: AddDataCardProps) {
       <span slot="heading">{props.item.title}</span>
       <div
         slot="description"
-        className="d-flex items-center"
+        className="flex items-center"
       >
         <img
           alt="Layer type logo"
@@ -172,7 +169,7 @@ export function AddDataCard(props: AddDataCardProps) {
           width={16}
           height={16}
         />
-        <span className="ms-3">{props.item.type}</span>
+        <span className="ml-3">{props.item.type}</span>
       </div>
       <div
         slot="footer-start"
@@ -180,7 +177,7 @@ export function AddDataCard(props: AddDataCardProps) {
       >
         <span
           ref={setOwnerRef}
-          className="text-truncate cursor-pointer"
+          className="cursor-pointer truncate"
         >
           {props.item.owner}
         </span>
@@ -190,15 +187,20 @@ export function AddDataCard(props: AddDataCardProps) {
           autoClose
           overlayPositioning="fixed"
           placement="bottom"
-          offsetSkidding={16}
-          offsetDistance={16}
+          offsetSkidding={24}
+          offsetDistance={8}
+          focusTrapDisabled
           oncalcitePopoverBeforeOpen={handleOwnerPopoverOpen}
+          style={{
+            '--calcite-popover-background-color':
+              'var(--calcite-color-foreground-2)'
+          }}
         >
-          <div style={{ width: '300px' }}>
+          <div className="w-[20rem]">
             {isOwnerLoading && !ownerUser && <calcite-loader label="" />}
             {ownerUser && (
               <>
-                <div className="d-flex items-center gap-5 p-7">
+                <div className="flex items-center gap-2 p-3">
                   <calcite-avatar
                     className="flex-none"
                     scale="m"
@@ -211,10 +213,7 @@ export function AddDataCard(props: AddDataCardProps) {
                     <div>Item managed by: {ownerUser.username}</div>
                   </div>
                 </div>
-                <div
-                  className="text-sm leading-relaxed overflow-auto pt-0 p-7"
-                  style={{ maxHeight: '15.5rem' }}
-                >
+                <div className="text-sm max-h-[15.5rem] overflow-auto p-2 pt-0 leading-relaxed">
                   {renderOwnerDescriptionContent(ownerUser.description)}
                 </div>
               </>

@@ -1,6 +1,6 @@
 import { EventHandler } from '@arcgis/lumina';
 import { useState } from 'react';
-import { FilterPanel } from './components';
+import { AddData } from './components';
 import { useThemeContext } from './contexts';
 import { ACCIDENTAL_DEATHS_MAP_ID } from './utils';
 
@@ -21,8 +21,9 @@ export function App() {
         slot="panel-start"
         position="start"
         layout="vertical"
+        resizable
       >
-        <FilterPanel view={view} />
+        <AddData view={view} />
       </calcite-shell-panel>
       <arcgis-map
         itemId={ACCIDENTAL_DEATHS_MAP_ID}

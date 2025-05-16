@@ -17,8 +17,8 @@ import { useRef } from 'react';
  * console.log(valueRef.current); // 10
  */
 export function useValue<T>(initialValue: T | (() => T)): {
-  value: T;
-  setValue: (value: T) => void;
+  get: () => T;
+  set: (value: T) => void;
 } {
   const ref = useRef<T>(null);
   if (ref.current === null) {
@@ -28,8 +28,8 @@ export function useValue<T>(initialValue: T | (() => T)): {
         : initialValue;
   }
   return {
-    value: ref.current,
-    setValue: (value: T) => {
+    get: () => ref.current as T,
+    set: (value: T) => {
       ref.current = value;
     }
   };

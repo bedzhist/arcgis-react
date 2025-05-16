@@ -790,7 +790,7 @@ export function AddData(props: AddDataProps) {
     let url = '';
     switch (source) {
       case ResultsSource.LIVING_ATLAS: {
-        const currLivingAtlasGroupId = livingAtlasGroupId.value;
+        const currLivingAtlasGroupId = livingAtlasGroupId.get();
         if (!currLivingAtlasGroupId) {
           // Handle error
           return;
@@ -820,7 +820,7 @@ export function AddData(props: AddDataProps) {
   const handleResultsPaginationChange = (
     event: CalcitePaginationCustomEvent<void>
   ) => {
-    const currLivingAtlasGroupId = livingAtlasGroupId.value;
+    const currLivingAtlasGroupId = livingAtlasGroupId.get();
     if (!currLivingAtlasGroupId) {
       // Handle error
       return;
@@ -835,20 +835,20 @@ export function AddData(props: AddDataProps) {
   const handleSearchResultsInput = (event: CalciteInputCustomEvent<void>) => {
     const searchValue = event.target.value;
     setResultsSearchValue(searchValue);
-    const currLivingAtlasGroupId = livingAtlasGroupId.value;
+    const currLivingAtlasGroupId = livingAtlasGroupId.get();
     if (!currLivingAtlasGroupId) {
       // Handle error
       return;
     }
     setResultsStart(1);
-    const currResultsSearchTimeout = resultsSearchTimeout.value;
+    const currResultsSearchTimeout = resultsSearchTimeout.get();
     if (currResultsSearchTimeout) clearTimeout(currResultsSearchTimeout);
     const newResultsSearchTimeout = setTimeout(() => {
       fetchResults(resultsSource, {
         q: `${RESULTS_Q} ${searchValue}`
       });
     }, 500);
-    resultsSearchTimeout.setValue(newResultsSearchTimeout);
+    resultsSearchTimeout.set(newResultsSearchTimeout);
   };
   const getResultsSource = (source: string) => {
     switch (source) {
@@ -893,7 +893,7 @@ export function AddData(props: AddDataProps) {
         return;
       }
       const newLivingAtlasGroupId = communityGroupsResponse.data.results[0].id;
-      livingAtlasGroupId.setValue(newLivingAtlasGroupId);
+      livingAtlasGroupId.set(newLivingAtlasGroupId);
       fetchResults(
         resultsSource,
         {
@@ -913,7 +913,7 @@ export function AddData(props: AddDataProps) {
   return (
     <calcite-tabs
       layout="center"
-      className="h-100"
+      className="h-full"
     >
       <calcite-tab-nav slot="title-group">
         <calcite-tab-title>Portal</calcite-tab-title>
@@ -921,8 +921,8 @@ export function AddData(props: AddDataProps) {
         <calcite-tab-title>URL</calcite-tab-title>
       </calcite-tab-nav>
       <calcite-tab>
-        <div className="d-flex flex-column h-100">
-          <div className="d-flex justify-center py-4">
+        <div className="flex h-full flex-col">
+          <div className="flex justify-center py-1">
             <calcite-dropdown
               maxItems={0}
               overlayPositioning="absolute"
@@ -967,7 +967,7 @@ export function AddData(props: AddDataProps) {
             type="search"
             placeholder="Search"
             icon="search"
-            className="p-3"
+            className="p-2.5"
             value={resultsSearchValue}
             oncalciteInputInput={handleSearchResultsInput}
           />
@@ -977,7 +977,7 @@ export function AddData(props: AddDataProps) {
           />
           <calcite-card-group
             label="Content Items"
-            className="overflow-auto h-100 mb-3 px-3"
+            className="mb-3 h-full overflow-auto px-3 pb-2"
           >
             {resultItems?.map((resultItem) => (
               <AddDataCard
@@ -991,14 +991,14 @@ export function AddData(props: AddDataProps) {
             pageSize={RESULTS_PAGE_SIZE}
             startItem={resultsStart}
             totalItems={resultsTotal}
-            className="justify-center py-3 border-t-1 border-color-1"
+            className="justify-center border-t border-color-1 py-2"
             oncalcitePaginationChange={handleResultsPaginationChange}
           />
         </div>
       </calcite-tab>
       <calcite-tab>
         <form
-          className="p-7"
+          className="p-3"
           action={fileFormAction}
         >
           <calcite-label>
@@ -1011,19 +1011,13 @@ export function AddData(props: AddDataProps) {
               ref={inputFileRef}
               type="file"
               accept=".csv,.zip,.geojson,.kml,.gpx"
-              className="d-flex border-1 border-dashed border-color-input bg-1 cursor-pointer inline-size-100 box-border text-default font-default focus:outline-2 focus:outline-color-brand"
-              style={{
-                outlineOffset: '-2px',
-                paddingInline: '0.75rem',
-                paddingBlock: '.25rem',
-                blockSize: '2rem'
-              }}
+              className="box-border flex h-8 w-full cursor-pointer border border-dashed bg-foreground-1 px-3 py-1 focus:focus-normal"
             />
           </calcite-label>
           <calcite-button
             type="submit"
-            disabled={isFileFormLoading}
             width="full"
+            disabled={isFileFormLoading}
             loading={isFileFormLoading}
           >
             Add Layer
@@ -1032,7 +1026,7 @@ export function AddData(props: AddDataProps) {
       </calcite-tab>
       <calcite-tab>
         <form
-          className="p-7"
+          className="p-3"
           action={urlFormAction}
         >
           <calcite-label>

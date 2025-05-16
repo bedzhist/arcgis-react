@@ -1,7 +1,6 @@
 import * as reactiveUtils from '@arcgis/core/core/reactiveUtils';
 import LayerListViewModel from '@arcgis/core/widgets/LayerList/LayerListViewModel';
 import { useEffect, useState } from 'react';
-import { useValue } from '../../hooks';
 import LayerListItem from '../LayerListItem';
 
 export interface LayerListProps {
@@ -11,8 +10,6 @@ export interface LayerListProps {
 }
 
 export function LayerList(props: LayerListProps) {
-  const layerListVM = useValue<__esri.LayerListViewModel | null>(null);
-
   const [operationalItems, setOperationalItems] =
     useState<__esri.Collection<__esri.ListItem>>();
 
@@ -63,7 +60,6 @@ export function LayerList(props: LayerListProps) {
       listItemCreatedFunction: props.listItemCreatedFunction,
       view
     });
-    layerListVM.setValue(newLayerListVM);
     const stateHandle = reactiveUtils.when(
       () => newLayerListVM.state === 'ready',
       () => {

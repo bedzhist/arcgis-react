@@ -302,7 +302,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
             appearance="transparent"
             width="full"
             scale="s"
-            className="mb-4"
+            className="mb-2.5"
             onClick={handleValuesOpenClick}
           >
             Select values
@@ -314,10 +314,10 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
                 referenceElement={selectValuesButtonRef || ''}
                 placement="right-start"
               >
-                <div style={{ width: '280px' }}>
+                <div className="w-[15rem]">
                   <calcite-input
                     type="search"
-                    className="m-5"
+                    className="m-3"
                     icon="search"
                     oncalciteInputInput={handleUniqueValuesFilterInput}
                   />
@@ -325,9 +325,8 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
                     label="Unique values"
                     selectionMode="multiple"
                     oncalciteListChange={handleValuesChange}
-                    className="overflow-y-auto"
+                    className="max-h-[15rem] overflow-y-auto"
                     scale="s"
-                    style={{ maxHeight: '240px' }}
                   >
                     {uniqueValueOptions.map((option) => (
                       <calcite-list-item
@@ -340,7 +339,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
                       >
                         <div
                           slot="actions-end"
-                          className="p-5 text-sm"
+                          className="p-2 text-n2"
                         >
                           {option.count}
                         </div>
@@ -348,11 +347,11 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
                     ))}
                   </calcite-list>
                   {exceededUniqueValuesTransferLimit && (
-                    <div className="m-4 text-sm">
+                    <div className="m-2.5 mb-1 text-n2">
                       Too many values to display.
                     </div>
                   )}
-                  <div className="p-3">
+                  <div className="p-2">
                     <calcite-button
                       width="full"
                       scale="s"
@@ -398,7 +397,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       props.expression.operator === FilterOperator.IS_AFTER_OR_EQUAL_TO
     ) {
       return (
-        <div className="d-flex mb-4">
+        <div className="mb-2.5 flex">
           <calcite-input-date-picker
             scale="s"
             value={props.expression.values[0]}
@@ -425,7 +424,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
         <calcite-input
           label="Value"
           scale="s"
-          className="mb-4"
+          className="mb-2.5"
           type={getInputType(props.expression.field)}
           value={props.expression.value}
           oncalciteInputInput={handleValueInput}
@@ -461,7 +460,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
         label="Field"
         selectionMode="single-persist"
         scale="s"
-        className="mb-4"
+        className="mb-2.5"
         clearDisabled
         ref={props.expression.fieldRef}
         value={props.expression.field.name}
@@ -480,7 +479,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
       <calcite-select
         label="Operator"
         scale="s"
-        className="mb-4"
+        className="mb-2.5"
         value={props.expression.operator}
         oncalciteSelectChange={handleOperatorChange}
       >

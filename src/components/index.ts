@@ -1,6 +1,6 @@
 export * from './AddData';
 export * from './AddDataCard';
-export * from './CalciteLayerListCombobox';
+export * from './LayersCombobox';
 export * from './Chatbot';
 export * from './FilterPanel';
 export * from './FilterPanelExpression';

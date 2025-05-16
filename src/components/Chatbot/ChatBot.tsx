@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { v4 } from 'uuid';
-import styles from './Chatbot.module.scss';
-
 interface ChatbotMessage {
   id: string;
   text: string;
@@ -87,60 +85,47 @@ export function Chatbot(props: ChatbotProps) {
   };
 
   return (
-    <div className="d-flex flex-column h-100 p-5 gap-8 box-border">
-      <div className="h-100 overflow-y-auto overflow-x-hidden">
+    <div className="box-border flex h-full flex-col gap-3 p-2">
+      <div className="h-full overflow-y-auto overflow-x-hidden">
         {messages.map((message) =>
           message.role === 'user' ? (
             <div
               key={message.id}
-              className="d-flex justify-end w-100 mb-7"
+              className="mb-3 flex w-full justify-end"
             >
-              <div
-                className="py-3 px-5 border-1 border-color-1 bg-1"
-                style={{
-                  maxWidth: '240px',
-                  wordBreak: 'break-word',
-                  borderRadius: '8px'
-                }}
-              >
+              <div className="max-w-[15rem] rounded-sm border border-color-1 bg-foreground-1 px-3 py-2 word-break">
                 {message.text}
               </div>
             </div>
           ) : (
             <div
               key={message.id}
-              className="d-flex justify-start w-100 mb-7"
+              className="mb-3 flex w-full justify-start"
             >
-              <div
-                className="py-2 px-5"
-                style={{ maxWidth: '240px', wordBreak: 'break-word' }}
-              >
+              <div className="max-w-[15rem] px-3 py-2 word-break">
                 {message.text}
               </div>
             </div>
           )
         )}
         {isChatFormLoading && (
-          <div className="d-flex justify-start w-100 mb-5 items-center">
+          <div className="mb-3 flex w-full items-center justify-start">
             <calcite-loader
               inline
               label="Thinking..."
             />
-            <span className="py-2 px-5">Thinking...</span>
+            <span className="px-3 py-2">Thinking...</span>
           </div>
         )}
       </div>
-      <form
-        className="d-flex items-center gap-3"
-        onSubmit={handleChatFormSubmit}
-      >
-        <label className={styles.label}>
+      <form onSubmit={handleChatFormSubmit}>
+        <label className="relative block w-full bg-foreground-1 px-1.5 py-1 focus-within:focus-outset">
           <textarea
             ref={queryRefCallback}
             name="query"
             rows={2}
             value={query}
-            className={styles.textarea}
+            className="box-border block max-h-[10rem] w-full resize-none text-pretty border-none bg-transparent pb-[2.5rem] font-inherit outline-none"
             onInput={handleQueryInput}
             onKeyDown={handleQueryKeyDown}
           />
@@ -152,7 +137,7 @@ export function Chatbot(props: ChatbotProps) {
             round
             appearance="transparent"
             disabled={!query || isChatFormLoading}
-            className="absolute right-0 bottom-0 m-4"
+            className="absolute bottom-0 right-0 m-1.5"
           />
         </label>
       </form>

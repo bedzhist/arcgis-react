@@ -10,36 +10,36 @@ import { v4 } from 'uuid';
 import { useValue } from '../../hooks';
 import { ArcGISLayer } from '../../types';
 
-export interface CalciteLayerListComboboxItem {
+export interface LayersComboboxItem {
   id: string;
   title: string;
   layer: ArcGISLayer;
-  children: __esri.Collection<CalciteLayerListComboboxItem>;
+  children: __esri.Collection<LayersComboboxItem>;
 }
 
-export type CalciteLayerListComboboxChangeItem =
-  | CalciteLayerListComboboxItem
-  | CalciteLayerListComboboxItem[]
+export type LayersComboboxChangeItem =
+  | LayersComboboxItem
+  | LayersComboboxItem[]
   | null;
-export interface CalciteLayerListComboboxProps
+export interface LayersComboboxProps
   extends Omit<ReactCalciteCombobox, 'children'> {
   view?: __esri.MapView | __esri.SceneView;
   layerTypes?: ArcGISLayer['type'][];
-  onCalciteLayerListComboboxChange?: (
-    item: CalciteLayerListComboboxChangeItem,
+  onLayersComboboxChange?: (
+    item: LayersComboboxChangeItem,
     event: CalciteComboboxCustomEvent<void>
   ) => void;
-  onCalciteLayerListComboboxUpdate?: (
-    itemCollection: __esri.Collection<CalciteLayerListComboboxItem>
+  onLayersComboboxUpdate?: (
+    itemCollection: __esri.Collection<LayersComboboxItem>
   ) => void;
 }
 
-export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
+export function LayersCombobox(props: LayersComboboxProps) {
   const {
     view: mapView,
     layerTypes,
-    onCalciteLayerListComboboxChange,
-    onCalciteLayerListComboboxUpdate,
+    onLayersComboboxChange,
+    onLayersComboboxUpdate,
     ...restProps
   } = props;
 
@@ -49,13 +49,12 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
     })
   );
 
-  const [items, setItems] =
-    useState<__esri.Collection<CalciteLayerListComboboxItem>>();
+  const [items, setItems] = useState<__esri.Collection<LayersComboboxItem>>();
 
   const comboboxItems = useMemo(() => {
     if (!items?.length) return null;
     const renderItems = (
-      itemCollection: __esri.Collection<CalciteLayerListComboboxItem>,
+      itemCollection: __esri.Collection<LayersComboboxItem>,
       level: number = 0
     ) => {
       return itemCollection.map((item) => {
@@ -97,24 +96,21 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
       const selectionMode = event.target.selectionMode;
       if (selectionMode === 'multiple' || selectionMode === 'ancestors') {
         if (item) {
-          onCalciteLayerListComboboxChange?.([item], event);
+          onLayersComboboxChange?.([item], event);
         } else {
-          onCalciteLayerListComboboxChange?.([], event);
+          onLayersComboboxChange?.([], event);
         }
       } else {
-        onCalciteLayerListComboboxChange?.(item || null, event);
+        onLayersComboboxChange?.(item || null, event);
       }
     } else {
-      const newItems = newValue.reduce<CalciteLayerListComboboxItem[]>(
-        (prev, curr) => {
-          const item = items
-            .flatten((item) => item.children)
-            .find((item) => item.id === curr);
-          return item ? [...prev, item] : prev;
-        },
-        []
-      );
-      onCalciteLayerListComboboxChange?.(newItems, event);
+      const newItems = newValue.reduce<LayersComboboxItem[]>((prev, curr) => {
+        const item = items
+          .flatten((item) => item.children)
+          .find((item) => item.id === curr);
+        return item ? [...prev, item] : prev;
+      }, []);
+      onLayersComboboxChange?.(newItems, event);
     }
   };
 
@@ -124,8 +120,8 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
     }
     const createItems = (
       operationalItems: __esri.Collection<__esri.ListItem>,
-      oldItems?: __esri.Collection<CalciteLayerListComboboxItem>
-    ): __esri.Collection<CalciteLayerListComboboxItem> => {
+      oldItems?: __esri.Collection<LayersComboboxItem>
+    ): __esri.Collection<LayersComboboxItem> => {
       return operationalItems
         .filter((item) => {
           const layer = item.layer;
@@ -155,7 +151,7 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
           };
         });
     };
-    const currLayerListVM = layerListVM.value;
+    const currLayerListVM = layerListVM.get();
     currLayerListVM.view = mapView;
     const layerListVMHandle = reactiveUtils.watch(
       () =>
@@ -169,7 +165,7 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
             currLayerListVM.operationalItems,
             oldItems
           );
-          onCalciteLayerListComboboxUpdate?.(newOperationalItems);
+          onLayersComboboxUpdate?.(newOperationalItems);
           return newOperationalItems;
         });
       }
@@ -177,7 +173,7 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
     return () => {
       layerListVMHandle.remove();
     };
-  }, [mapView, layerTypes, onCalciteLayerListComboboxUpdate, layerListVM]);
+  }, [mapView, layerTypes, onLayersComboboxUpdate, layerListVM]);
   return (
     <calcite-combobox
       {...restProps}
@@ -188,4 +184,4 @@ export function CalciteLayerListCombobox(props: CalciteLayerListComboboxProps) {
   );
 }
 
-export default CalciteLayerListCombobox;
+export default LayersCombobox;

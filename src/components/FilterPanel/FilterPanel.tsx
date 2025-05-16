@@ -3,15 +3,15 @@ import { createRef, useMemo, useState } from 'react';
 import { v4 } from 'uuid';
 import { ArcGISLayer } from '../../types';
 import { toUTCDateString } from '../../utils';
-import CalciteLayerListCombobox, {
-  CalciteLayerListComboboxChangeItem,
-  CalciteLayerListComboboxItem
-} from '../CalciteLayerListCombobox';
 import FilterPanelExpression, {
   FilterExpression,
   FilterOperator
 } from '../FilterPanelExpression';
 import { getOperators } from '../FilterPanelExpression/utils';
+import LayersCombobox, {
+  LayersComboboxChangeItem,
+  LayersComboboxItem
+} from '../LayersCombobox';
 
 interface FilterPanelProps {
   view?: __esri.MapView | __esri.SceneView;
@@ -25,8 +25,7 @@ enum FilterPanelLogicalOperator {
 }
 
 export function FilterPanel(props: FilterPanelProps) {
-  const [layerItem, setLayerItem] =
-    useState<CalciteLayerListComboboxItem | null>(null);
+  const [layerItem, setLayerItem] = useState<LayersComboboxItem | null>(null);
   const [expressions, setExpressions] = useState<FilterExpression[]>([]);
   const [logicalOperator, setLogicalOperator] =
     useState<FilterPanelLogicalOperator>(FilterPanelLogicalOperator.AND);
@@ -278,9 +277,7 @@ export function FilterPanel(props: FilterPanelProps) {
       .join(` ${newLogicalOperator} `);
     layer.definitionExpression = where;
   };
-  const handleLayerChange = async (
-    item: CalciteLayerListComboboxChangeItem
-  ) => {
+  const handleLayerChange = async (item: LayersComboboxChangeItem) => {
     if (Array.isArray(item)) return;
     if (item) {
       const layer = item.layer as ArcGISLayer;
@@ -363,14 +360,11 @@ export function FilterPanel(props: FilterPanelProps) {
       heading="Filter"
       overlayPositioning="absolute"
     >
-      <div
-        slot="content-top"
-        className="w-100 p-3"
-      >
+      <div className="w-full border-b border-b-color-1 p-3">
         <calcite-notice
           open
           hidden={!isNoticeOpen}
-          className="mb-7"
+          className="mb-5"
           icon="filter"
           closable
           oncalciteNoticeClose={handleNoticeClose}
@@ -381,12 +375,12 @@ export function FilterPanel(props: FilterPanelProps) {
         </calcite-notice>
         <calcite-label>
           Layer
-          <CalciteLayerListCombobox
+          <LayersCombobox
             view={props.view}
             label="Layer"
             selectionMode="single"
             value={layerItem?.id}
-            onCalciteLayerListComboboxChange={handleLayerChange}
+            onLayersComboboxChange={handleLayerChange}
             overlayPositioning="fixed"
           />
         </calcite-label>
@@ -411,7 +405,7 @@ export function FilterPanel(props: FilterPanelProps) {
           kind="danger"
           iconStart="trash"
           onClick={handleRemoveAllClick}
-          className="text-truncate mt-3 mb-1"
+          className="mb-1 mt-3 truncate"
           disabled={!expressions.length}
         >
           Remove all expressions
@@ -435,10 +429,12 @@ export function FilterPanel(props: FilterPanelProps) {
         onClick={handleAddExpressionClick}
       />
       <calcite-scrim hidden={!isRemoveScrimOpen}>
-        <div className="bottom-0 left-0 right-0 p-3 bg-1">
+        <div className="bottom-0 left-0 right-0 bg-foreground-1 p-3">
           <b>Remove all expressions</b>
-          <p>Are you sure? All expressions will be removed.</p>
-          <div className="d-flex">
+          <p className="mb-2.5">
+            Are you sure? All expressions will be removed.
+          </p>
+          <div className="flex">
             <calcite-button
               width="full"
               appearance="outline"
