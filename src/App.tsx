@@ -1,13 +1,12 @@
 import { EventHandler } from '@arcgis/lumina';
 import { useState } from 'react';
-import { AddData } from './components';
 import { useThemeContext } from './contexts';
 import { ACCIDENTAL_DEATHS_MAP_ID } from './utils';
 
 export function App() {
   const themeContext = useThemeContext();
 
-  const [view, setView] = useState<__esri.MapView | __esri.SceneView>();
+  const [, setView] = useState<__esri.MapView | __esri.SceneView>();
 
   const handleArcgisViewReadyChange: EventHandler<
     HTMLArcgisMapElement['arcgisViewReadyChange']
