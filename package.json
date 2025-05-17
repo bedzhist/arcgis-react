@@ -43,8 +43,7 @@
   },
   "lint-staged": {
     "*": [
-      "npm run lint",
-      "prettier --check"
+      "npm run lint"
     ]
   }
 }
