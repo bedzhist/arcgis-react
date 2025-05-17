@@ -17,14 +17,6 @@ export function App() {
 
   return (
     <calcite-shell>
-      <calcite-shell-panel
-        slot="panel-start"
-        position="start"
-        layout="vertical"
-        resizable
-      >
-        <AddData view={view} />
-      </calcite-shell-panel>
       <arcgis-map
         itemId={ACCIDENTAL_DEATHS_MAP_ID}
         basemap={themeContext?.darkMode ? 'dark-gray-vector' : 'gray-vector'}
