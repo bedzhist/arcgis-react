@@ -1,8 +1,8 @@
 /* Calcite */
-@import "calcite";
+@import 'calcite';
 
 /* Scrollbar */
-@import "scrollbar";
+@import 'scrollbar';
 
 /* Tailwind */
 @tailwind base;

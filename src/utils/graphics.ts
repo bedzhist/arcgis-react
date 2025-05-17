@@ -1,7 +1,7 @@
-import Graphic from "@arcgis/core/Graphic";
-import SimpleFillSymbol from "@arcgis/core/symbols/SimpleFillSymbol";
-import SimpleLineSymbol from "@arcgis/core/symbols/SimpleLineSymbol";
-import SimpleMarkerSymbol from "@arcgis/core/symbols/SimpleMarkerSymbol";
+import Graphic from '@arcgis/core/Graphic';
+import SimpleFillSymbol from '@arcgis/core/symbols/SimpleFillSymbol';
+import SimpleLineSymbol from '@arcgis/core/symbols/SimpleLineSymbol';
+import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
 
 export const createPointGraphic = (
   point: __esri.Point,
@@ -16,30 +16,30 @@ export const createPointGraphic = (
     geometry: point,
     symbol
   });
-}
+};
 
 export const createPolylineGraphic = (
   polyline: __esri.Polyline,
   color: string | number[] = 'red'
 ) => {
   const symbol = new SimpleLineSymbol({
-    color,
+    color
   });
   return new Graphic({
     geometry: polyline,
     symbol
   });
-}
+};
 
 export const createPolygonGraphic = (
   polygon: __esri.Polygon,
   color: string | number[] = 'red'
 ) => {
   const symbol = new SimpleFillSymbol({
-    color,
+    color
   });
   return new Graphic({
     geometry: polygon,
     symbol
   });
-}
+};

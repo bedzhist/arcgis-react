@@ -18,7 +18,7 @@
 }
 
 .calcite-mode-dark ::-webkit-scrollbar-thumb:hover {
-  background: rgb(227, 227, 227)
+  background: rgb(227, 227, 227);
 }
 
 ::-webkit-scrollbar-thumb {

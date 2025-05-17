@@ -1,7 +1,7 @@
-import Point from "@arcgis/core/geometry/Point";
-import Polygon from "@arcgis/core/geometry/Polygon";
-import SpatialReference from "@arcgis/core/geometry/SpatialReference";
-import * as webMercatorUtils from "@arcgis/core/geometry/support/webMercatorUtils";
+import Point from '@arcgis/core/geometry/Point';
+import Polygon from '@arcgis/core/geometry/Polygon';
+import SpatialReference from '@arcgis/core/geometry/SpatialReference';
+import * as webMercatorUtils from '@arcgis/core/geometry/support/webMercatorUtils';
 import * as geodesicUtils from '@arcgis/core/geometry/support/geodesicUtils';
 
 type AxisUnit = 'meters' | 'kilometers';
@@ -51,7 +51,10 @@ export class Ellipse extends Polygon {
     numberOfPoints = 60,
     geodesic = false
   }: EllipseProperties) {
-    if (!center.spatialReference.isWGS84 && !center.spatialReference.isWebMercator) {
+    if (
+      !center.spatialReference.isWGS84 &&
+      !center.spatialReference.isWebMercator
+    ) {
       throw new Error('Invalid spatial reference');
     }
     super();
@@ -81,7 +84,9 @@ export class Ellipse extends Polygon {
     if (geodesic) {
       const angleStep = 360 / numberOfPoints;
       const ring = [];
-      const geographicCenter = this.spatialReference.isWGS84 ? center : webMercatorUtils.webMercatorToGeographic(center) as Point;
+      const geographicCenter = this.spatialReference.isWGS84
+        ? center
+        : (webMercatorUtils.webMercatorToGeographic(center) as Point);
       for (let angle = 0; angle <= 360; angle += angleStep) {
         const radAngle = (angle * Math.PI) / 180;
         const x =
@@ -93,10 +98,16 @@ export class Ellipse extends Polygon {
         const radius = Math.sqrt(x * x + y * y);
         const point = [0, 0];
         const centerCoordinates = [geographicCenter.x, geographicCenter.y];
-        const newAngle = Math.atan2(y, x) * 180 / Math.PI;
-        const geodesicAngle = ((90 - newAngle) % 360);
+        const newAngle = (Math.atan2(y, x) * 180) / Math.PI;
+        const geodesicAngle = (90 - newAngle) % 360;
         // @ts-expect-error - TS doesn't know about directGeodeticSolver yet
-        geodesicUtils.directGeodeticSolver(point, centerCoordinates, geodesicAngle, radius, SpatialReference.WGS84);
+        geodesicUtils.directGeodeticSolver(
+          point,
+          centerCoordinates,
+          geodesicAngle,
+          radius,
+          SpatialReference.WGS84
+        );
         ring.push(point);
       }
 
@@ -108,12 +119,15 @@ export class Ellipse extends Polygon {
         });
       }
       this.addRing(parsedRing);
-    }
-    else {
+    } else {
       const angleStep = 360 / numberOfPoints;
       const ring = [];
-      const parsedSemiXAxis = this.spatialReference.isWGS84 ? metersSemiXAxis * Ellipse.K : metersSemiXAxis;
-      const parsedSemiYAxis = this.spatialReference.isWGS84 ? metersSemiYAxis * Ellipse.K : metersSemiYAxis;
+      const parsedSemiXAxis = this.spatialReference.isWGS84
+        ? metersSemiXAxis * Ellipse.K
+        : metersSemiXAxis;
+      const parsedSemiYAxis = this.spatialReference.isWGS84
+        ? metersSemiYAxis * Ellipse.K
+        : metersSemiYAxis;
       for (let angle = 0; angle <= 360; angle += angleStep) {
         const radAngle = (angle * Math.PI) / 180;
         const x =

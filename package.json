@@ -42,6 +42,9 @@
     "vite-plugin-static-copy": "^2.3.1"
   },
   "lint-staged": {
-    "*": "npm run lint"
+    "*": [
+      "npm run lint",
+      "prettier --check"
+    ]
   }
 }
