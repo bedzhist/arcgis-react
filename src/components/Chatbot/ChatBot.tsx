@@ -85,7 +85,7 @@ export function Chatbot(props: ChatbotProps) {
   };
 
   return (
-    <div className="box-border flex h-full flex-col gap-3 p-2">
+    <div className="box-border flex h-full flex-col gap-3 p-4">
       <div className="h-full overflow-y-auto overflow-x-hidden">
         {messages.map((message) =>
           message.role === 'user' ? (
@@ -119,7 +119,7 @@ export function Chatbot(props: ChatbotProps) {
         )}
       </div>
       <form onSubmit={handleChatFormSubmit}>
-        <label className="relative block w-full bg-foreground-1 px-1.5 py-1 focus-within:focus-outset">
+        <label className="relative block w-full bg-foreground-1 p-3 focus-within:focus-outset">
           <textarea
             ref={queryRefCallback}
             name="query"

@@ -39,6 +39,8 @@ body {
   --calcite-color-foreground-2: #f3f3f3;
   --calcite-color-foreground-1: #fff;
   --calcite-color-background: #f8f8f8;
+
+  --calcite-z-index-1: 1;
 }
 
 body.calcite-mode-dark {
@@ -82,11 +84,4 @@ body.calcite-mode-dark {
   --calcite-color-foreground-2: #202020;
   --calcite-color-foreground-1: #2b2b2b;
   --calcite-color-background: #353535;
-
-  --calcite-z-index-1: 1;
-}
-
-calcite-combobox-item-group {
-  --calcite-combobox-item-spacing-unit-l: 0;
-  --calcite-color-text-2: var(--calcite-color-brand);
 }

@@ -11,11 +11,18 @@ export function App() {
   const handleArcgisViewReadyChange: EventHandler<
     HTMLArcgisMapElement['arcgisViewReadyChange']
   > = (event) => {
-    setView(event.target.view);
+    const newView = event.target.view;
+    setView(newView);
   };
 
   return (
     <calcite-shell>
+      <div
+        id="test"
+        className="test"
+      >
+        <h1>Test</h1>
+      </div>
       <arcgis-map
         itemId={ACCIDENTAL_DEATHS_MAP_ID}
         basemap={themeContext?.darkMode ? 'dark-gray-vector' : 'gray-vector'}
