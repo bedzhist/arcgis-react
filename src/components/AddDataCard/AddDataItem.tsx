@@ -191,10 +191,7 @@ export function AddDataCard(props: AddDataCardProps) {
           offsetDistance={8}
           focusTrapDisabled
           oncalcitePopoverBeforeOpen={handleOwnerPopoverOpen}
-          style={{
-            '--calcite-popover-background-color':
-              'var(--calcite-color-foreground-2)'
-          }}
+          className="[--calcite-popover-background-color:var(--calcite-color-foreground-2)]"
         >
           <div className="w-[20rem]">
             {isOwnerLoading && !ownerUser && <calcite-loader label="" />}
