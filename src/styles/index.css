@@ -1,17 +1,7 @@
 /* Calcite */
 @import 'calcite';
 
-/* Scrollbar */
-@import 'scrollbar';
-
 /* Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-html,
-body,
-#root {
-  margin: 0;
-  height: 100%;
-}

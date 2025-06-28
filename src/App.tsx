@@ -1,10 +1,10 @@
 import { EventHandler } from '@arcgis/lumina';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useThemeContext } from './contexts';
 import { ACCIDENTAL_DEATHS_MAP_ID } from './utils';
 
 export function App() {
-  const themeContext = useThemeContext();
+  const { darkMode } = useThemeContext();
 
   const [, setView] = useState<__esri.MapView | __esri.SceneView>();
 
@@ -15,11 +15,15 @@ export function App() {
     setView(newView);
   };
 
+  const basemap = useMemo(() => {
+    return darkMode ? 'dark-gray-vector' : 'gray-vector';
+  }, [darkMode]);
+
   return (
     <calcite-shell>
       <arcgis-map
         itemId={ACCIDENTAL_DEATHS_MAP_ID}
-        basemap={themeContext?.darkMode ? 'dark-gray-vector' : 'gray-vector'}
+        basemap={basemap}
         onarcgisViewReadyChange={handleArcgisViewReadyChange}
       />
     </calcite-shell>
