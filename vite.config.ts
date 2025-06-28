@@ -13,7 +13,7 @@ export default defineConfig({
           dest: '.'
         },
         {
-          src: 'node_modules/@arcgis/map-components/dist/arcgis-map-components/assets',
+          src: 'node_modules/@arcgis/map-components/dist/cdn/assets',
           dest: '.'
         },
         {
