@@ -15,9 +15,10 @@ export function App() {
     setView(newView);
   };
 
-  const basemap = useMemo(() => {
-    return darkMode ? 'dark-gray-vector' : 'gray-vector';
-  }, [darkMode]);
+  const basemap = useMemo(
+    () => (darkMode ? 'dark-gray-vector' : 'gray-vector'),
+    [darkMode]
+  );
 
   return (
     <calcite-shell>

@@ -322,7 +322,7 @@ export function AddData(props: AddDataProps) {
           const layer = new CSVLayer({
             url: URL.createObjectURL(file)
           });
-          view.map.add(layer);
+          view.map?.add(layer);
           await view.whenLayerView(layer);
           view.goTo(layer.fullExtent);
           break;
@@ -355,7 +355,7 @@ export function AddData(props: AddDataProps) {
             response.data.featureCollection;
           const { layers, allGraphics } =
             buildLayersFromCollection(featureCollection);
-          view.map.addMany(layers);
+          view.map?.addMany(layers);
           view.goTo(allGraphics);
           break;
         }
@@ -363,7 +363,7 @@ export function AddData(props: AddDataProps) {
           const layer = new GeoJSONLayer({
             url: URL.createObjectURL(file)
           });
-          view.map.add(layer);
+          view.map?.add(layer);
           break;
         }
         case 'application/vnd.google-earth.kml+xml': {
@@ -379,7 +379,7 @@ export function AddData(props: AddDataProps) {
             response.data.featureCollection;
           const { layers, allGraphics } =
             buildLayersFromCollection(featureCollection);
-          view.map.addMany(layers);
+          view.map?.addMany(layers);
           view.goTo(allGraphics);
           break;
         }
@@ -412,7 +412,7 @@ export function AddData(props: AddDataProps) {
               response.data.featureCollection;
             const { layers, allGraphics } =
               buildLayersFromCollection(featureCollection);
-            view.map.addMany(layers);
+            view.map?.addMany(layers);
             view.goTo(allGraphics);
           }
           break;
@@ -458,7 +458,7 @@ export function AddData(props: AddDataProps) {
       if (!layer) {
         return null;
       }
-      view.map.add(layer);
+      view.map?.add(layer);
       alertContext?.showSuccessAlert({
         title: 'Layer Added',
         message: 'The layer has been added to the map.',
@@ -735,7 +735,7 @@ export function AddData(props: AddDataProps) {
     const layer = await Layer.fromPortalItem({
       portalItem
     });
-    view.map.add(layer);
+    view.map?.add(layer);
     await view.whenLayerView(layer);
     if (layer.type === 'group') {
       const groupLayer = layer as __esri.GroupLayer;
