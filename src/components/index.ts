@@ -1,5 +1,4 @@
 export * from './AddData';
-export * from './AddDataCard';
 export * from './LayersCombobox';
 export * from './Chatbot';
 export * from './FilterPanel';
