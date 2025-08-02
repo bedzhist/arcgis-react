@@ -1,8 +1,8 @@
 import { EventHandler } from '@arcgis/lumina';
+import '@arcgis/map-components/components/arcgis-map';
 import { useMemo, useState } from 'react';
 import { useThemeContext } from './contexts';
 import { ACCIDENTAL_DEATHS_MAP_ID } from './utils';
-import '@arcgis/map-components/components/arcgis-map';
 
 export function App() {
   const { darkMode } = useThemeContext();
