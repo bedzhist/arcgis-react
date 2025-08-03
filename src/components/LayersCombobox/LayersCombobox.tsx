@@ -168,12 +168,16 @@ export function LayersCombobox(props: LayersComboboxProps) {
           onLayersComboboxUpdate?.(newOperationalItems);
           return newOperationalItems;
         });
+      },
+      {
+        initial: true
       }
     );
     return () => {
       layerListVMHandle.remove();
     };
   }, [mapView, layerTypes, onLayersComboboxUpdate, layerListVM]);
+
   return (
     <calcite-combobox
       {...restProps}

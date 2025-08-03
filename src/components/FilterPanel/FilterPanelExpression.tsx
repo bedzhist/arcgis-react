@@ -10,29 +10,16 @@ import {
 import { useCallback, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { toUTCDateString } from '../../utils';
-import { FilterPanelLayer } from '../FilterPanel/FilterPanel';
-import { FilterExpression, FilterOperator } from './types';
-import { getOperators } from './utils';
+import { getOperators } from './functions';
+import {
+  FilterExpression,
+  FilterOperator,
+  FilterPanelExpressionProps,
+  FilterPanelExpressionValueOption,
+  FilterPanelOperatorItem
+} from './types';
 
-interface FilterPanelOperatorItem {
-  value: FilterOperator;
-  text: string;
-}
-
-interface FilterPanelExpressionValueOption {
-  label: string;
-  value: string;
-  count: number;
-}
-
-export interface FilterPanelExpressionProps {
-  expression: FilterExpression;
-  layer: FilterPanelLayer | null;
-  onDelete: (id: string) => void;
-  onExpressionChange: (expression: FilterExpression) => void;
-}
-
-export function FilterPanelExpression(props: FilterPanelExpressionProps) {
+function FilterPanelExpression(props: FilterPanelExpressionProps) {
   const [selectValuesButtonRef, setSelectValuesButtonRef] =
     useState<HTMLCalciteButtonElement | null>(null);
   const [uniqueValueOptions, setUniqueValueOptions] = useState<
@@ -436,7 +423,7 @@ export function FilterPanelExpression(props: FilterPanelExpressionProps) {
   return (
     <calcite-block
       heading="Expression"
-      open
+      expanded
       disabled={isDisabled}
     >
       <calcite-dropdown

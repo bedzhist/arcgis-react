@@ -9,7 +9,7 @@ import {
 } from './constants';
 import { AddDataCardProps } from './types';
 
-export function AddDataCard(props: AddDataCardProps) {
+function AddDataCard(props: AddDataCardProps) {
   const [ownerRef, setOwnerRef] = useState<HTMLSpanElement | null>(null);
   const [ownerUser, setOwnerUser] = useState<__esri.PortalUser | null>(null);
   const [isOwnerLoading, setIsOwnerLoading] = useState<boolean>(false);
@@ -185,3 +185,5 @@ export function AddDataCard(props: AddDataCardProps) {
     </calcite-card>
   );
 }
+
+export default AddDataCard;

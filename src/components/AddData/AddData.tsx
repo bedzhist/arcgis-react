@@ -21,7 +21,7 @@ import {
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { useAlertContext } from '../../contexts/AlertContext';
 import { useValue } from '../../hooks';
-import { AddDataCard } from './AddDataCard';
+import AddDataCard from './AddDataCard';
 import {
   COMMUNITY_GROUPS_SERVICE_URL,
   CONTENT_GROUPS_SERVICE_URL,

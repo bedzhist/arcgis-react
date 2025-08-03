@@ -1,3 +1,14 @@
+export interface FilterPanelProps {
+  view: __esri.MapView | __esri.SceneView;
+}
+
+export type FilterPanelLayer = __esri.Sublayer | __esri.FeatureLayer;
+
+export enum FilterPanelLogicalOperator {
+  AND = 'AND',
+  OR = 'OR'
+}
+
 export enum FilterOperator {
   IS = 'IS',
   IS_NOT = 'IS_NOT',
@@ -36,4 +47,22 @@ export interface FilterExpression {
   operator: FilterOperator;
   value: string;
   values: string[];
+}
+
+export interface FilterPanelOperatorItem {
+  value: FilterOperator;
+  text: string;
+}
+
+export interface FilterPanelExpressionValueOption {
+  label: string;
+  value: string;
+  count: number;
+}
+
+export interface FilterPanelExpressionProps {
+  expression: FilterExpression;
+  layer: FilterPanelLayer | null;
+  onDelete: (id: string) => void;
+  onExpressionChange: (expression: FilterExpression) => void;
 }

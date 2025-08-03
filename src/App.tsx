@@ -3,11 +3,12 @@ import '@arcgis/map-components/components/arcgis-map';
 import { useMemo, useState } from 'react';
 import { useThemeContext } from './contexts';
 import { ACCIDENTAL_DEATHS_MAP_ID } from './utils';
+import { FilterPanel } from './components';
 
 export function App() {
   const { darkMode } = useThemeContext();
 
-  const [, setView] = useState<__esri.MapView | __esri.SceneView>();
+  const [view, setView] = useState<__esri.MapView | __esri.SceneView>();
 
   const handleArcgisViewReadyChange: EventHandler<
     HTMLArcgisMapElement['arcgisViewReadyChange']
@@ -23,6 +24,9 @@ export function App() {
 
   return (
     <calcite-shell>
+      <calcite-shell-panel slot="panel-start">
+        {view && <FilterPanel view={view} />}
+      </calcite-shell-panel>
       <arcgis-map
         itemId={ACCIDENTAL_DEATHS_MAP_ID}
         basemap={basemap}

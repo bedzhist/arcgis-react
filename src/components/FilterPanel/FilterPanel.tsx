@@ -3,26 +3,19 @@ import { createRef, useMemo, useState } from 'react';
 import { v4 } from 'uuid';
 import { ArcGISLayer } from '../../types';
 import { toUTCDateString } from '../../utils';
-import FilterPanelExpression, {
-  FilterExpression,
-  FilterOperator
-} from '../FilterPanelExpression';
-import { getOperators } from '../FilterPanelExpression/utils';
 import LayersCombobox, {
   LayersComboboxChangeItem,
   LayersComboboxItem
 } from '../LayersCombobox';
-
-interface FilterPanelProps {
-  view?: __esri.MapView | __esri.SceneView;
-}
-
-export type FilterPanelLayer = __esri.Sublayer | __esri.FeatureLayer;
-
-enum FilterPanelLogicalOperator {
-  AND = 'AND',
-  OR = 'OR'
-}
+import FilterPanelExpression from './FilterPanelExpression';
+import { getOperators } from './functions';
+import {
+  FilterExpression,
+  FilterOperator,
+  FilterPanelLayer,
+  FilterPanelLogicalOperator,
+  FilterPanelProps
+} from './types';
 
 export function FilterPanel(props: FilterPanelProps) {
   const [layerItem, setLayerItem] = useState<LayersComboboxItem | null>(null);
@@ -291,7 +284,7 @@ export function FilterPanel(props: FilterPanelProps) {
         }
       }
       if (layer.type !== 'subtype-sublayer') {
-        props.view?.goTo(layer.fullExtent);
+        props.view.goTo(layer.fullExtent);
       }
     } else {
       if (!layer) return;
