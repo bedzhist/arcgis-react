@@ -2,7 +2,7 @@ import { EventHandler } from '@arcgis/lumina';
 import '@arcgis/map-components/components/arcgis-map';
 import { useMemo, useState } from 'react';
 import { useThemeContext } from './contexts';
-import AlertContext, { Alert, useAlert } from './contexts/AlertContext';
+import AlertContext, { useAlert } from './contexts/AlertContext';
 import { ACCIDENTAL_DEATHS_MAP_ID } from './utils';
 
 export function App() {
@@ -32,10 +32,17 @@ export function App() {
           basemap={basemap}
           onarcgisViewReadyChange={handleArcgisViewReadyChange}
         />
-        <Alert
-          data={alert}
-          onClose={alertMethods.hideAlert}
-        />
+        <calcite-alert
+          slot="alerts"
+          icon={alert?.icon}
+          kind={alert?.kind}
+          open={!!alert}
+          label={alert?.title || ''}
+          oncalciteAlertClose={alertMethods.hideAlert}
+        >
+          <div slot="title">{alert?.title}</div>
+          <div slot="message">{alert?.message}</div>
+        </calcite-alert>
       </calcite-shell>
     </AlertContext>
   );

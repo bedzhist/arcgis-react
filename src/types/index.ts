@@ -20,3 +20,7 @@ export type AllArcGISLayer =
   | __esri.StreamLayer
   | __esri.GeoJSONLayer
   | __esri.KMLLayer;
+
+export interface Slottable {
+  slot?: string;
+}
