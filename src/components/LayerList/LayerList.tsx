@@ -1,12 +1,12 @@
 import * as reactiveUtils from '@arcgis/core/core/reactiveUtils';
 import LayerListViewModel from '@arcgis/core/widgets/LayerList/LayerListViewModel';
 import { useEffect, useState } from 'react';
-import LayerListItem from '../LayerListItem';
+import LayerListItem from './LayerListItem';
 
 export interface LayerListProps {
   ref?: React.RefObject<HTMLDivElement>;
-  view?: __esri.MapView;
-  listItemCreatedFunction?: __esri.LayerListListItemCreatedHandler;
+  view?: __esri.MapView | __esri.SceneView;
+  listItemCreatedCallback?: __esri.LayerListListItemCreatedHandler;
 }
 
 export function LayerList(props: LayerListProps) {
@@ -57,7 +57,7 @@ export function LayerList(props: LayerListProps) {
       return;
     }
     const newLayerListVM = new LayerListViewModel({
-      listItemCreatedFunction: props.listItemCreatedFunction,
+      listItemCreatedFunction: props.listItemCreatedCallback,
       view
     });
     const stateHandle = reactiveUtils.when(
@@ -74,13 +74,16 @@ export function LayerList(props: LayerListProps) {
           .toArray(),
       () => {
         setOperationalItems(newLayerListVM.operationalItems.clone());
+      },
+      {
+        initial: true
       }
     );
     return () => {
       watchHandle.remove();
       stateHandle.remove();
     };
-  }, [props.view]);
+  }, [props.view, props.listItemCreatedCallback]);
 
   return (
     <div ref={props.ref}>

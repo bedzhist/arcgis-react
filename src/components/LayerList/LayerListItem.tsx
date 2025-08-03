@@ -31,7 +31,7 @@ const getToggledActions = (
   }, []);
 };
 
-export function LayerListItem(props: LayerListItemProps) {
+function LayerListItem(props: LayerListItemProps) {
   const [visible, setVisible] = useState(props.item.visible);
   const [toggledActions, setToggledActions] = useState<string[]>(() =>
     getToggledActions(props.item.actionsSections)
@@ -157,9 +157,12 @@ export function LayerListItem(props: LayerListItemProps) {
 
   useEffect(() => {
     const item = props.item;
-    const visibilityHandle = item.watch('visible', (visible) => {
-      setVisible(visible);
-    });
+    const visibilityHandle = reactiveUtils.watch(
+      () => item.visible,
+      (visible) => {
+        setVisible(visible);
+      }
+    );
     return () => {
       visibilityHandle.remove();
     };
