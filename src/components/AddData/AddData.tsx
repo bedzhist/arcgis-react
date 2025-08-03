@@ -6,9 +6,9 @@ import GeoJSONLayer from '@arcgis/core/layers/GeoJSONLayer';
 import Layer from '@arcgis/core/layers/Layer';
 import Field from '@arcgis/core/layers/support/Field';
 import PortalItem from '@arcgis/core/portal/PortalItem';
-import { UniqueValueRenderer } from '@arcgis/core/rasterRenderers';
-import { SimpleRenderer } from '@arcgis/core/renderers';
+import SimpleRenderer from '@arcgis/core/renderers/SimpleRenderer';
 import UniqueValueInfo from '@arcgis/core/renderers/support/UniqueValueInfo';
+import UniqueValueRenderer from '@arcgis/core/renderers/UniqueValueRenderer';
 import {
   default as esriRequest,
   default as request
@@ -302,7 +302,7 @@ const RESULTS_FILTER =
 const RESULTS_Q =
   '(-typekeywords:"Elevation 3D Layer" AND -typekeywords:"IndoorPositioningDataService" AND -typekeywords:"Requires Subscription" AND -typekeywords:"Requires Credits") -typekeywords:("MapAreaPackage") -type:("Map Area" OR "Indoors Map Configuration" OR "Code Attachment")';
 const ARCGIS_ITEM_TYPE_LOGO_BASE_URL =
-  'https://www.arcgis.com/apps/mapviewer/node_modules/@arcgis/app-components/dist/arcgis-app/assets/arcgis-item-type/';
+  'https://www.arcgis.com/apps/mapviewer/arcgis-app-assets/assets/arcgis-item-type/';
 const ARCGIS_ITEM_TYPE_SVG = {
   FEATURE: 'featureshosted16.svg',
   MAP_IMAGE: 'mapimages16.svg',
