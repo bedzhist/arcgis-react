@@ -158,5 +158,5 @@ export interface AddDataCardProps {
 }
 
 export interface AddDataProps {
-  view?: __esri.MapView | __esri.SceneView;
+  view: __esri.MapView | __esri.SceneView;
 }

@@ -55,11 +55,6 @@ export function AddData(props: AddDataProps) {
   const [, fileFormAction, isFileFormLoading] = useActionState<null, FormData>(
     async () => {
       const view = props.view;
-      if (!view) {
-        alertContext?.showDefaultErrorAlert();
-        console.error('View is not defined.');
-        return null;
-      }
       const inputFileEl = inputFileRef.current;
       if (!inputFileEl) {
         alertContext?.showDefaultErrorAlert();
@@ -197,10 +192,6 @@ export function AddData(props: AddDataProps) {
   const [, urlFormAction, isUrlFormLoading] = useActionState<null, FormData>(
     async (_, formData) => {
       const view = props.view;
-      if (!view) {
-        // Handle error
-        return null;
-      }
       const url = formData.get('url');
       if (typeof url !== 'string') {
         // Handle error
@@ -480,10 +471,6 @@ export function AddData(props: AddDataProps) {
     item: ResultItem
   ) => {
     const view = props.view;
-    if (!view) {
-      // Handle error
-      return;
-    }
     const target = event.currentTarget;
     const portalItem = new PortalItem({
       id: item.id
