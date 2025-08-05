@@ -69,3 +69,7 @@ yarn.lock
 
 # Ignore all files in the .pnp.js file (for Yarn projects)
 .pnp.js
+
+.env.example
+.gitignore
+.prettierignore
