@@ -2,13 +2,13 @@ import { EventHandler } from '@arcgis/lumina';
 import '@arcgis/map-components/components/arcgis-map';
 import { useMemo, useState } from 'react';
 import { useThemeContext } from './contexts';
-import AlertContext, { useAlert } from './contexts/AlertContext';
+import AlertContext, { useAlerts } from './contexts/AlertContext';
 import { ACCIDENTAL_DEATHS_MAP_ID } from './utils';
 
 export function App() {
   const { darkMode } = useThemeContext();
 
-  const [alert, alertMethods] = useAlert();
+  const [alerts, alertMethods] = useAlerts();
 
   const [, setView] = useState<__esri.MapView | __esri.SceneView>();
 
@@ -32,17 +32,20 @@ export function App() {
           basemap={basemap}
           onarcgisViewReadyChange={handleArcgisViewReadyChange}
         />
-        <calcite-alert
-          slot="alerts"
-          icon={alert?.icon}
-          kind={alert?.kind}
-          open={!!alert}
-          label={alert?.title || ''}
-          oncalciteAlertClose={alertMethods.hideAlert}
-        >
-          <div slot="title">{alert?.title}</div>
-          <div slot="message">{alert?.message}</div>
-        </calcite-alert>
+        {alerts.map((alert) => (
+          <calcite-alert
+            key={alert.id}
+            slot="alerts"
+            open
+            icon={alert.icon}
+            kind={alert.kind}
+            label={alert.title || ''}
+            oncalciteAlertClose={() => alertMethods.hideAlert(alert.id)}
+          >
+            <div slot="title">{alert.title}</div>
+            <div slot="message">{alert.message}</div>
+          </calcite-alert>
+        ))}
       </calcite-shell>
     </AlertContext>
   );

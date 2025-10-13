@@ -1,22 +1,23 @@
 import { useState } from 'react';
 import { v4 } from 'uuid';
-interface ChatbotMessage {
+
+interface ChatMessage {
   id: string;
   text: string;
   role: 'user' | 'system';
 }
 
-interface ChatbotProps {
+interface ChatProps {
   queryAction: (query: string) => Promise<string>;
 }
 
-export function Chatbot(props: ChatbotProps) {
-  const [messages, setMessages] = useState<ChatbotMessage[]>([]);
+export function Chat(props: ChatProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [query, setQuery] = useState<string>();
   const [isChatFormLoading, setIsChatFormLoading] = useState<boolean>(false);
 
   const submitQuery = async (newQuery: string) => {
-    const message: ChatbotMessage = {
+    const message: ChatMessage = {
       id: v4(),
       text: newQuery,
       role: 'user'
@@ -26,7 +27,7 @@ export function Chatbot(props: ChatbotProps) {
     setIsChatFormLoading(true);
     const systemText = await props.queryAction(newQuery);
     setIsChatFormLoading(false);
-    const systemMessage: ChatbotMessage = {
+    const systemMessage: ChatMessage = {
       id: v4(),
       text: systemText,
       role: 'system'
@@ -145,4 +146,4 @@ export function Chatbot(props: ChatbotProps) {
   );
 }
 
-export default Chatbot;
+export default Chat;

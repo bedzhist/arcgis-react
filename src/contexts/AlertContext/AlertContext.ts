@@ -12,7 +12,7 @@ export interface AlertData {
 export type AlertProps = Omit<AlertData, 'id'>;
 
 export interface AlertContextStore {
-  hideAlert: () => void;
+  hideAlert: (id: string) => void;
   showErrorAlert: (errorAlert: Omit<AlertProps, 'kind'>) => void;
   showSuccessAlert: (successAlert: Omit<AlertProps, 'kind'>) => void;
   showInfoAlert: (infoAlert: Omit<AlertProps, 'kind'>) => void;

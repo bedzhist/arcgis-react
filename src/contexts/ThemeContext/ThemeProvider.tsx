@@ -6,10 +6,10 @@ interface ThemeProviderProps {
   children: React.ReactNode;
 }
 
-const DEFAULT_DARK_MODE = true;
-
 export const ThemeProvider = (props: ThemeProviderProps) => {
-  const [darkMode, setDarkMode] = useState<boolean>(DEFAULT_DARK_MODE);
+  const [darkMode, setDarkMode] = useState<boolean>(
+    () => window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
   const [ready, setReady] = useState<boolean>(false);
 
   const updateDarkMode = (value: boolean) => {
