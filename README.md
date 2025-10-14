@@ -34,11 +34,11 @@ npm run build
 arcgis-react-app/
 ├── public: Public assets
 ├── src: Source code
-│   ├── components: React components
 │   ├── assets: Asset files
-│   ├── config: Configuration files
+│   ├── components: React components
 │   ├── contexts: React contexts
 │   ├── hooks: Custom hooks
+│   ├── lib: Library code
 │   ├── styles: Styling
 │   ├── types: Type definitions
 │   └── utils: Utility functions
