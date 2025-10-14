@@ -9,14 +9,14 @@ export interface AlertData {
   autoClose?: boolean;
 }
 
-export type AlertProps = Omit<AlertData, 'id'>;
+export type AlertParams = Omit<AlertData, 'id'>;
 
 export interface AlertContextStore {
   hideAlert: (id: string) => void;
-  showErrorAlert: (errorAlert: Omit<AlertProps, 'kind'>) => void;
-  showSuccessAlert: (successAlert: Omit<AlertProps, 'kind'>) => void;
-  showInfoAlert: (infoAlert: Omit<AlertProps, 'kind'>) => void;
-  showWarningAlert: (warningAlert: Omit<AlertProps, 'kind'>) => void;
+  showErrorAlert: (params: Omit<AlertParams, 'kind'>) => void;
+  showSuccessAlert: (params: Omit<AlertParams, 'kind'>) => void;
+  showInfoAlert: (params: Omit<AlertParams, 'kind'>) => void;
+  showWarningAlert: (params: Omit<AlertParams, 'kind'>) => void;
   showDefaultErrorAlert: () => void;
 }
 

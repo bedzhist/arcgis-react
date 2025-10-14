@@ -1,29 +1,29 @@
 import { useState } from 'react';
 import { v4 } from 'uuid';
-import { AlertData, AlertProps } from '.';
+import { AlertData, AlertParams } from '.';
 
 export const useAlerts = () => {
   const [alerts, setAlerts] = useState<AlertData[]>([]);
 
-  const showErrorAlert = (errorAlert: Omit<AlertProps, 'kind'>) =>
+  const showErrorAlert = (params: Omit<AlertParams, 'kind'>) =>
     setAlerts((prevAlerts) => [
       ...prevAlerts,
-      { ...errorAlert, kind: 'danger', id: v4() }
+      { ...params, kind: 'danger', id: v4() }
     ]);
-  const showSuccessAlert = (successAlert: Omit<AlertProps, 'kind'>) =>
+  const showSuccessAlert = (params: Omit<AlertParams, 'kind'>) =>
     setAlerts((prevAlerts) => [
       ...prevAlerts,
-      { ...successAlert, kind: 'success', id: v4() }
+      { ...params, kind: 'success', id: v4() }
     ]);
-  const showInfoAlert = (infoAlert: Omit<AlertProps, 'kind'>) =>
+  const showInfoAlert = (params: Omit<AlertParams, 'kind'>) =>
     setAlerts((prevAlerts) => [
       ...prevAlerts,
-      { ...infoAlert, kind: 'info', id: v4() }
+      { ...params, kind: 'info', id: v4() }
     ]);
-  const showWarningAlert = (warningAlert: Omit<AlertProps, 'kind'>) =>
+  const showWarningAlert = (params: Omit<AlertParams, 'kind'>) =>
     setAlerts((prevAlerts) => [
       ...prevAlerts,
-      { ...warningAlert, kind: 'warning', id: v4() }
+      { ...params, kind: 'warning', id: v4() }
     ]);
   const showDefaultErrorAlert = () =>
     setAlerts((prevAlerts) => [
