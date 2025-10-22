@@ -11,14 +11,6 @@ export default defineConfig({
         {
           src: 'node_modules/@esri/calcite-components/dist/calcite/assets',
           dest: '.'
-        },
-        {
-          src: 'node_modules/@arcgis/map-components/dist/cdn/assets',
-          dest: '.'
-        },
-        {
-          src: 'node_modules/@arcgis/core/assets/esri/themes',
-          dest: '.'
         }
       ]
     })
