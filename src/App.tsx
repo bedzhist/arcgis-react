@@ -1,6 +1,5 @@
 import { EventHandler } from '@arcgis/lumina';
 import '@arcgis/map-components/components/arcgis-map';
-import '@arcgis/map-components/components/arcgis-popup';
 import { useMemo, useState } from 'react';
 import { useThemeContext } from './contexts';
 import AlertContext, { useAlerts } from './contexts/AlertContext';
@@ -32,9 +31,7 @@ export function App() {
           itemId={ACCIDENTAL_DEATHS_MAP_ID}
           basemap={basemap}
           onarcgisViewReadyChange={handleArcgisViewReadyChange}
-        >
-          <arcgis-popup />
-        </arcgis-map>
+        />
         {alerts.map((alert) => (
           <calcite-alert
             key={alert.id}
