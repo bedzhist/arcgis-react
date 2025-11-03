@@ -1,8 +1,9 @@
 import { createContext } from 'react';
 
 export interface ThemeContextStore {
-  darkMode: boolean;
-  updateDarkMode: (value: boolean) => void;
+  isDarkMode: boolean;
+  set: (value: boolean) => void;
+  toggle: () => void;
 }
 
 export const ThemeContext = createContext<ThemeContextStore | undefined>(

@@ -1,12 +1,13 @@
 import { EventHandler } from '@arcgis/lumina';
 import '@arcgis/map-components/components/arcgis-map';
+import '@arcgis/map-components/components/arcgis-popup';
 import { useMemo, useState } from 'react';
 import { useThemeContext } from './contexts';
 import AlertContext, { useAlerts } from './contexts/AlertContext';
 import { ACCIDENTAL_DEATHS_MAP_ID } from './utils';
 
 export function App() {
-  const { darkMode } = useThemeContext();
+  const { isDarkMode } = useThemeContext();
 
   const [alerts, alertMethods] = useAlerts();
 
@@ -20,8 +21,8 @@ export function App() {
   };
 
   const basemap = useMemo(
-    () => (darkMode ? 'dark-gray-vector' : 'gray-vector'),
-    [darkMode]
+    () => (isDarkMode ? 'dark-gray-vector' : 'gray-vector'),
+    [isDarkMode]
   );
 
   return (
@@ -31,11 +32,14 @@ export function App() {
           itemId={ACCIDENTAL_DEATHS_MAP_ID}
           basemap={basemap}
           onarcgisViewReadyChange={handleArcgisViewReadyChange}
-        />
+        >
+          <arcgis-popup />
+        </arcgis-map>
         {alerts.map((alert) => (
           <calcite-alert
             key={alert.id}
             slot="alerts"
+            className="[--calcite-z-index-toast:1000]"
             open
             icon={alert.icon}
             kind={alert.kind}

@@ -7,25 +7,29 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = (props: ThemeProviderProps) => {
-  const [darkMode, setDarkMode] = useState<boolean>(
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(
     () => window.matchMedia('(prefers-color-scheme: dark)').matches
   );
   const [ready, setReady] = useState<boolean>(false);
 
-  const updateDarkMode = (value: boolean) => {
-    setDarkMode(value);
+  const set = (value: boolean) => {
+    setIsDarkMode(value);
+  };
+  const toggle = () => {
+    setIsDarkMode((prev) => !prev);
   };
 
   useEffect(() => {
-    setThemeMode(darkMode ? 'dark' : 'light');
+    setThemeMode(isDarkMode ? 'dark' : 'light');
     setReady(true);
-  }, [darkMode]);
+  }, [isDarkMode]);
 
   return (
     <ThemeContext
       value={{
-        darkMode,
-        updateDarkMode
+        isDarkMode,
+        set,
+        toggle
       }}
     >
       {ready && props.children}

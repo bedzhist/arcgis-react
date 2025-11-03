@@ -6,9 +6,9 @@ export const CONTENT_GROUPS_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/
 export const SEARCH_SERVICE_URL = `${esriConfig.portalUrl}/sharing/rest/search`;
 export const RESULTS_PAGE_SIZE = 10;
 export const RESULTS_FILTER =
-  '(type:"Map Service" OR type:"Image Service" OR type:"Feature Service" OR type:"Vector Tile Service" OR type:"OGCFeatureServer" OR type:"WMS" OR type:"WFS" OR type:"WMTS" OR type:"KML" OR type: "Stream Service" OR type: "Feed" OR type:"Media Layer" OR type:"Group Layer" OR type:"GeoJson" OR type:"Knowledge Graph Service" OR type:"Knowledge Graph Layer" OR (type: "Feature Service" AND typekeywords: "OrientedImageryLayer") OR (type: "Feature Service" AND typekeywords: "CatalogLayer") OR (type:"Feature Collection" AND typekeywords:"Route Layer") OR (type:"Feature collection" AND typekeywords:"Markup")) -typekeywords: "Table"';
+  '((type:"Map Service" OR type:"Image Service" OR type:"Feature Service" OR type:"Vector Tile Service" OR type:"OGCFeatureServer" OR type:"WMS" OR type:"WFS" OR type:"WMTS" OR type:"WCS" OR type:"KML" OR type: "Stream Service" OR type: "Video Service" OR type:"Feed" OR type:"Media Layer" OR type:"Group Layer" OR type:"GeoJson" OR type:"Knowledge Graph Service" OR type:"Knowledge Graph Layer" OR (type: "Feature Service" AND typekeywords: "OrientedImageryLayer") OR (type: "Feature Service" AND typekeywords: "CatalogLayer") OR (type:"Feature Collection" AND typekeywords:"Route Layer") OR (type:"Feature collection" AND typekeywords:"Markup") OR (type:"Feature Collection" AND typekeywords:"Sketch Layer")) -typekeywords: "Table") -typekeywords:("MapAreaPackage") -type:("Map Area" OR "Indoors Map Configuration" OR "Code Attachment")';
 export const RESULTS_Q =
-  '(-typekeywords:"Elevation 3D Layer" AND -typekeywords:"IndoorPositioningDataService" AND -typekeywords:"Requires Subscription" AND -typekeywords:"Requires Credits") -typekeywords:("MapAreaPackage") -type:("Map Area" OR "Indoors Map Configuration" OR "Code Attachment")';
+  '(-typekeywords:"Elevation 3D Layer" AND -typekeywords:"IndoorPositioningDataService")';
 export const ARCGIS_ITEM_TYPE_LOGO_BASE_URL =
   'https://www.arcgis.com/apps/mapviewer/arcgis-app-assets/assets/arcgis-item-type/';
 export const ARCGIS_ITEM_TYPE_SVG = {

@@ -481,36 +481,47 @@ export function AddData(props: AddDataProps) {
       portalItem
     });
     view.map?.add(layer);
-    await view.whenLayerView(layer);
-    if (layer.type === 'group') {
-      const groupLayer = layer as __esri.GroupLayer;
-      const layers = groupLayer.allLayers;
-      const fullExtentList = await Promise.all(
-        layers.map(async (layer) => {
-          await view.whenLayerView(layer);
-          return layer.fullExtent;
-        })
-      );
-      if (fullExtentList.length === 0) {
-        alertContext?.showDefaultErrorAlert();
-        console.error('No full extents found.');
-        return;
+    try {
+      await view.whenLayerView(layer);
+      if (layer.type === 'group') {
+        const groupLayer = layer as __esri.GroupLayer;
+        const layers = groupLayer.allLayers;
+        const fullExtentList = await Promise.all(
+          layers.map(async (layer) => {
+            await view.whenLayerView(layer);
+            return layer.fullExtent;
+          })
+        );
+        if (fullExtentList.length === 0) {
+          alertContext?.showDefaultErrorAlert();
+          console.error('No full extents found.');
+          return;
+        }
+        const fullExtent = fullExtentList.reduce((acc, extent) => {
+          return extent ? acc?.union(extent) : acc;
+        });
+        view.goTo(fullExtent);
+      } else {
+        view.goTo(layer.fullExtent);
       }
-      const fullExtent = fullExtentList.reduce((acc, extent) => {
-        return extent ? acc?.union(extent) : acc;
+      target.loading = false;
+      target.disabled = false;
+      alertContext?.showSuccessAlert({
+        title: 'Layer Added',
+        message: `The layer "${item.title}" has been added to the map.`,
+        icon: 'layer',
+        autoClose: true
       });
-      view.goTo(fullExtent);
-    } else {
-      view.goTo(layer.fullExtent);
+    } catch (error) {
+      target.loading = false;
+      target.disabled = false;
+      alertContext?.showErrorAlert({
+        title: 'Error',
+        message: 'Failed to add the layer to the map.',
+        icon: 'exclamation-mark-triangle'
+      });
+      console.error('Error adding layer from portal:', error);
     }
-    target.loading = false;
-    target.disabled = false;
-    alertContext?.showSuccessAlert({
-      title: 'Layer Added',
-      message: `The layer "${item.title}" has been added to the map.`,
-      icon: 'layer',
-      autoClose: true
-    });
   };
   const fetchResults = async (
     source: ResultsSource,
@@ -523,8 +534,6 @@ export function AddData(props: AddDataProps) {
     const query = {
       num: RESULTS_PAGE_SIZE,
       start: options?.start || resultsStart,
-      sortField: 'modified',
-      sortOrder: 'desc',
       filter: RESULTS_FILTER,
       q: options?.q || RESULTS_Q,
       displaySublayers: true,
@@ -590,7 +599,7 @@ export function AddData(props: AddDataProps) {
     if (currResultsSearchTimeout) clearTimeout(currResultsSearchTimeout);
     const newResultsSearchTimeout = setTimeout(() => {
       fetchResults(resultsSource, {
-        q: `${RESULTS_Q} ${searchValue}`
+        q: `(${searchValue}) ${RESULTS_Q}`
       });
     }, 500);
     resultsSearchTimeout.set(newResultsSearchTimeout);
